@@ -1,0 +1,100 @@
+id: TC-API-010
+category: api_usage
+difficulty: hard
+tags: [aws, s3, multipart-upload, boto3, retry, python]
+
+prompts:
+  en: |
+    Implement a robust AWS S3 multipart upload utility in Python using `boto3` with retry logic and progress tracking:
+
+    ```python
+    class S3MultipartUploader:
+        def __init__(self, bucket: str, region: str = "us-east-1", max_retries: int = 3, part_size_mb: int = 8): ...
+
+        def upload_file(self, local_path: str, s3_key: str, metadata: dict = None,
+                       on_progress: Callable[[int, int], None] = None) -> dict: ...
+
+        def upload_fileobj(self, fileobj, s3_key: str, content_type: str,
+                          total_size: int, metadata: dict = None) -> dict: ...
+
+        def _upload_part(self, upload_id: str, s3_key: str, part_number: int,
+                        data: bytes) -> dict: ...  # returns ETag dict
+
+        def abort_upload(self, s3_key: str, upload_id: str) -> None: ...
+    ```
+
+    Requirements:
+    - Part size minimum is 5 MB (AWS requirement); use `part_size_mb` (default 8)
+    - Each part upload retries up to `max_retries` times with exponential backoff
+    - `upload_file` calls `on_progress(bytes_uploaded, total_bytes)` after each part
+    - On any unrecoverable error, call `abort_multipart_upload` to clean up
+    - Return a dict with `bucket`, `key`, `etag`, `size_bytes`, `parts_count` on success
+    - Use `boto3.client('s3', region_name=region)` — do NOT hardcode credentials
+    - Handle `botocore.exceptions.ClientError` specifically
+  ko: |
+    재시도 로직과 진행률 추적을 포함하는 `boto3`를 사용하여 Python에서 견고한 AWS S3 멀티파트 업로드 유틸리티를 구현하세요:
+
+    ```python
+    class S3MultipartUploader:
+        def __init__(self, bucket: str, region: str = "us-east-1", max_retries: int = 3, part_size_mb: int = 8): ...
+
+        def upload_file(self, local_path: str, s3_key: str, metadata: dict = None,
+                       on_progress: Callable[[int, int], None] = None) -> dict: ...
+
+        def upload_fileobj(self, fileobj, s3_key: str, content_type: str,
+                          total_size: int, metadata: dict = None) -> dict: ...
+
+        def _upload_part(self, upload_id: str, s3_key: str, part_number: int,
+                        data: bytes) -> dict: ...  # ETag dict 반환
+
+        def abort_upload(self, s3_key: str, upload_id: str) -> None: ...
+    ```
+
+    요구사항:
+    - 파트 크기 최소 5 MB (AWS 요구사항); `part_size_mb` 사용 (기본값 8)
+    - 각 파트 업로드는 지수 백오프로 최대 `max_retries`번 재시도
+    - `upload_file`은 각 파트 이후 `on_progress(bytes_uploaded, total_bytes)` 호출
+    - 복구 불가능한 오류 발생 시 `abort_multipart_upload`를 호출하여 정리
+    - 성공 시 `bucket`, `key`, `etag`, `size_bytes`, `parts_count`가 있는 dict 반환
+    - `boto3.client('s3', region_name=region)` 사용 — 자격 증명 하드코딩 금지
+    - `botocore.exceptions.ClientError`를 명시적으로 처리
+  ja: |
+    リトライロジックと進捗追跡を含む`boto3`を使用してPythonで堅牢なAWS S3マルチパートアップロードユーティリティを実装してください:
+
+    ```python
+    class S3MultipartUploader:
+        def __init__(self, bucket: str, region: str = "us-east-1", max_retries: int = 3, part_size_mb: int = 8): ...
+
+        def upload_file(self, local_path: str, s3_key: str, metadata: dict = None,
+                       on_progress: Callable[[int, int], None] = None) -> dict: ...
+
+        def upload_fileobj(self, fileobj, s3_key: str, content_type: str,
+                          total_size: int, metadata: dict = None) -> dict: ...
+
+        def _upload_part(self, upload_id: str, s3_key: str, part_number: int,
+                        data: bytes) -> dict: ...  # ETag dictを返す
+
+        def abort_upload(self, s3_key: str, upload_id: str) -> None: ...
+    ```
+
+    要件:
+    - パートサイズ最小5 MB（AWS要件）; `part_size_mb`を使用（デフォルト8）
+    - 各パートアップロードは指数バックオフで最大`max_retries`回再試行
+    - `upload_file`は各パート後に`on_progress(bytes_uploaded, total_bytes)`を呼び出す
+    - 回復不可能なエラーが発生した場合、`abort_multipart_upload`を呼び出してクリーンアップ
+    - 成功時に`bucket`、`key`、`etag`、`size_bytes`、`parts_count`を含むdictを返す
+    - `boto3.client('s3', region_name=region)`を使用 — 認証情報をハードコードしない
+    - `botocore.exceptions.ClientError`を明示的に処理
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Uses boto3.client('s3', region_name=region) without hardcoded credentials"
+    - "Calls create_multipart_upload() to get upload_id before uploading parts"
+    - "Splits file into chunks of part_size_mb * 1024 * 1024 bytes"
+    - "_upload_part implements retry loop with exponential backoff (e.g., 2**attempt seconds)"
+    - "Collects ETags from each part into a Parts list for complete_multipart_upload"
+    - "Calls abort_multipart_upload in except/finally block on failure"
+    - "on_progress callback is called after each successful part upload"
+    - "Returns dict with bucket, key, etag, size_bytes, parts_count"
+  scoring_notes: "Critical: abort must be called on failure to avoid orphaned multipart uploads (AWS charges for incomplete uploads). Deduct heavily if missing. Deduct if no retry logic."

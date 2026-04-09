@@ -1,0 +1,66 @@
+id: TC-API-004
+category: api_usage
+difficulty: medium
+tags: [oauth2, jwt, authentication, fastapi, security]
+
+prompts:
+  en: |
+    Implement a complete OAuth2 password flow with JWT tokens using FastAPI and python-jose. Create:
+
+    1. A `User` Pydantic model with `username`, `hashed_password`, `email`, `disabled` fields
+    2. `UserInDB` extending User (same fields, for "database" storage)
+    3. A fake in-memory user database dict
+    4. Functions:
+       - `verify_password(plain, hashed) -> bool` using passlib bcrypt
+       - `get_password_hash(password) -> str`
+       - `authenticate_user(db, username, password) -> User | False`
+       - `create_access_token(data: dict, expires_delta: timedelta | None) -> str`
+    5. A `/token` POST endpoint accepting `OAuth2PasswordRequestForm` returning `{"access_token": ..., "token_type": "bearer"}`
+    6. A `/users/me` GET endpoint that requires a valid JWT and returns the current user
+    7. Proper HTTP 401 with `WWW-Authenticate: Bearer` header on auth failure
+
+    Use `SECRET_KEY`, `ALGORITHM = "HS256"`, `ACCESS_TOKEN_EXPIRE_MINUTES = 30` constants.
+  ko: |
+    FastAPI와 python-jose를 사용하여 JWT 토큰이 있는 완전한 OAuth2 패스워드 플로우를 구현하세요:
+
+    1. `username`, `hashed_password`, `email`, `disabled` 필드를 가진 Pydantic `User` 모델
+    2. User를 확장하는 `UserInDB` ("데이터베이스" 저장용, 동일 필드)
+    3. 가짜 인메모리 사용자 데이터베이스 dict
+    4. 함수들:
+       - passlib bcrypt를 사용하는 `verify_password(plain, hashed) -> bool`
+       - `get_password_hash(password) -> str`
+       - `authenticate_user(db, username, password) -> User | False`
+       - `create_access_token(data: dict, expires_delta: timedelta | None) -> str`
+    5. `OAuth2PasswordRequestForm`을 받고 `{"access_token": ..., "token_type": "bearer"}`를 반환하는 `/token` POST 엔드포인트
+    6. 유효한 JWT를 요구하고 현재 사용자를 반환하는 `/users/me` GET 엔드포인트
+    7. 인증 실패 시 `WWW-Authenticate: Bearer` 헤더와 함께 HTTP 401 반환
+
+    `SECRET_KEY`, `ALGORITHM = "HS256"`, `ACCESS_TOKEN_EXPIRE_MINUTES = 30` 상수를 사용하세요.
+  ja: |
+    FastAPIとpython-joseを使用してJWTトークンを使った完全なOAuth2パスワードフローを実装してください:
+
+    1. `username`、`hashed_password`、`email`、`disabled`フィールドを持つPydanticの`User`モデル
+    2. Userを拡張する`UserInDB`（「データベース」ストレージ用、同じフィールド）
+    3. フェイクのインメモリユーザーデータベースdict
+    4. 関数:
+       - passlib bcryptを使用する`verify_password(plain, hashed) -> bool`
+       - `get_password_hash(password) -> str`
+       - `authenticate_user(db, username, password) -> User | False`
+       - `create_access_token(data: dict, expires_delta: timedelta | None) -> str`
+    5. `OAuth2PasswordRequestForm`を受け取り`{"access_token": ..., "token_type": "bearer"}`を返す`/token` POSTエンドポイント
+    6. 有効なJWTを必要とし現在のユーザーを返す`/users/me` GETエンドポイント
+    7. 認証失敗時に`WWW-Authenticate: Bearer`ヘッダーとともにHTTP 401を返す
+
+    `SECRET_KEY`、`ALGORITHM = "HS256"`、`ACCESS_TOKEN_EXPIRE_MINUTES = 30`定数を使用してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines User and UserInDB Pydantic models with correct fields"
+    - "Uses passlib CryptContext with bcrypt scheme for password hashing"
+    - "create_access_token uses jose.jwt.encode() with exp claim"
+    - "POST /token endpoint uses OAuth2PasswordRequestForm dependency and returns token"
+    - "GET /users/me uses Depends() with oauth2_scheme and decodes JWT"
+    - "Returns HTTP 401 with WWW-Authenticate: Bearer header on invalid credentials"
+    - "Uses SECRET_KEY, ALGORITHM, and ACCESS_TOKEN_EXPIRE_MINUTES constants"
+  scoring_notes: "Full credit requires correct JWT encode/decode, proper dependency injection, and 401 with correct header. Deduct if passlib is not used or JWT expiry is missing."

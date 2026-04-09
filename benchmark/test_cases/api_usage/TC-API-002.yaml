@@ -1,0 +1,54 @@
+id: TC-API-002
+category: api_usage
+difficulty: easy
+tags: [fastapi, pydantic, rest-api, validation, python]
+
+prompts:
+  en: |
+    Create a FastAPI application with a single POST endpoint `/users` that creates a new user. Use Pydantic for request/response validation.
+
+    Requirements:
+    - Request body model `UserCreate` with fields: `name` (str, required, min length 1), `email` (str, required, valid email format), `age` (int, optional, must be 0-150 if provided)
+    - Response model `UserResponse` adds an `id` (UUID) and `created_at` (datetime) field
+    - Return HTTP 201 on success with the full UserResponse
+    - Return HTTP 422 automatically for validation errors (FastAPI default)
+    - Use `uuid.uuid4()` for ID generation and `datetime.utcnow()` for timestamp
+    - Include the complete runnable app with `uvicorn` startup comment
+
+    Do NOT use a database — store users in a module-level in-memory list.
+  ko: |
+    새 사용자를 생성하는 단일 POST 엔드포인트 `/users`를 가진 FastAPI 애플리케이션을 만드세요. 요청/응답 유효성 검사를 위해 Pydantic을 사용하세요.
+
+    요구사항:
+    - 요청 본문 모델 `UserCreate`: `name` (str, 필수, 최소 길이 1), `email` (str, 필수, 유효한 이메일 형식), `age` (int, 선택, 제공 시 0-150이어야 함)
+    - 응답 모델 `UserResponse`: `id` (UUID)와 `created_at` (datetime) 필드 추가
+    - 성공 시 전체 UserResponse와 함께 HTTP 201 반환
+    - 유효성 검사 오류에 대해 HTTP 422 자동 반환 (FastAPI 기본값)
+    - ID 생성에 `uuid.uuid4()`, 타임스탬프에 `datetime.utcnow()` 사용
+    - `uvicorn` 시작 주석이 있는 완전한 실행 가능 앱 포함
+
+    데이터베이스를 사용하지 마세요 — 모듈 수준의 메모리 내 리스트에 사용자를 저장하세요.
+  ja: |
+    新しいユーザーを作成する単一のPOSTエンドポイント`/users`を持つFastAPIアプリケーションを作成してください。リクエスト/レスポンスのバリデーションにPydanticを使用してください。
+
+    要件:
+    - リクエストボディモデル`UserCreate`のフィールド: `name`（str、必須、最小長1）、`email`（str、必須、有効なメール形式）、`age`（int、オプション、指定する場合は0-150）
+    - レスポンスモデル`UserResponse`に`id`（UUID）と`created_at`（datetime）フィールドを追加
+    - 成功時にUserResponse全体とともにHTTP 201を返す
+    - バリデーションエラーに対してHTTP 422を自動的に返す（FastAPIのデフォルト）
+    - ID生成に`uuid.uuid4()`、タイムスタンプに`datetime.utcnow()`を使用
+    - `uvicorn`起動コメント付きの完全な実行可能アプリを含める
+
+    データベースは使用しないでください — モジュールレベルのメモリ内リストにユーザーを保存してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines Pydantic UserCreate model with name, email, age fields and correct validators"
+    - "Defines Pydantic UserResponse model extending UserCreate with id (UUID) and created_at (datetime)"
+    - "POST /users endpoint returns status_code=201"
+    - "Uses uuid.uuid4() for ID and datetime.utcnow() for timestamp"
+    - "Stores users in a module-level list (not a database)"
+    - "FastAPI app is importable and runnable with uvicorn"
+    - "Email validation is present (using EmailStr or validator)"
+  scoring_notes: "Full credit requires correct status code 201, proper Pydantic models, and working validation. Deduct if status code is 200 or validation is missing."

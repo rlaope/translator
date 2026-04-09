@@ -1,0 +1,189 @@
+id: TC-DEBUG-006
+category: debugging
+difficulty: medium
+tags: [async, asyncio, deadlock, coroutines, debugging]
+
+prompts:
+  en: |
+    The following async Python code has incorrect async/await usage that causes deadlocks or blocks the event loop. Find and fix all issues:
+
+    ```python
+    import asyncio
+    import time
+
+    async def fetch_data(url):
+        """Simulate fetching data from a URL."""
+        time.sleep(2)  # Bug: blocks the event loop
+        return f"data from {url}"
+
+    async def process_all(urls):
+        """Fetch all URLs and return results."""
+        results = []
+        for url in urls:
+            result = fetch_data(url)  # Bug: missing await
+            results.append(result)
+        return results
+
+    async def get_with_timeout(url, timeout=5):
+        """Fetch URL with a timeout."""
+        try:
+            result = await fetch_data(url)
+            return result
+        except asyncio.TimeoutError:
+            return None
+        # Bug: timeout is never actually applied
+
+    def run_sync(coro):
+        """Run a coroutine from synchronous code."""
+        loop = asyncio.get_event_loop()  # Bug: deprecated pattern
+        return loop.run_until_complete(coro)
+
+    async def producer_consumer():
+        queue = asyncio.Queue()
+        async def producer():
+            for i in range(5):
+                await queue.put(i)
+            # Bug: consumer will wait forever (no sentinel value)
+
+        async def consumer():
+            while True:
+                item = await queue.get()
+                print(f"Consumed: {item}")
+                queue.task_done()
+
+        await asyncio.gather(producer(), consumer())
+    ```
+
+    For each bug: identify the issue, explain its runtime consequence, and provide the corrected async code.
+  ko: |
+    다음 비동기 Python 코드에는 데드락을 유발하거나 이벤트 루프를 차단하는 잘못된 async/await 사용이 있습니다. 모든 문제를 찾아 수정하세요:
+
+    ```python
+    import asyncio
+    import time
+
+    async def fetch_data(url):
+        """URL에서 데이터 가져오기를 시뮬레이션합니다."""
+        time.sleep(2)  # 버그: 이벤트 루프를 차단
+        return f"data from {url}"
+
+    async def process_all(urls):
+        """모든 URL을 가져와 결과를 반환합니다."""
+        results = []
+        for url in urls:
+            result = fetch_data(url)  # 버그: await 누락
+            results.append(result)
+        return results
+
+    async def get_with_timeout(url, timeout=5):
+        """타임아웃으로 URL을 가져옵니다."""
+        try:
+            result = await fetch_data(url)
+            return result
+        except asyncio.TimeoutError:
+            return None
+        # 버그: 타임아웃이 실제로 적용되지 않음
+
+    def run_sync(coro):
+        """동기 코드에서 코루틴을 실행합니다."""
+        loop = asyncio.get_event_loop()  # 버그: 더 이상 사용되지 않는 패턴
+        return loop.run_until_complete(coro)
+
+    async def producer_consumer():
+        queue = asyncio.Queue()
+        async def producer():
+            for i in range(5):
+                await queue.put(i)
+            # 버그: 소비자가 영원히 기다림 (센티넬 값 없음)
+
+        async def consumer():
+            while True:
+                item = await queue.get()
+                print(f"Consumed: {item}")
+                queue.task_done()
+
+        await asyncio.gather(producer(), consumer())
+    ```
+
+    각 버그에 대해: 문제 식별, 런타임 결과 설명, 수정된 비동기 코드 제공.
+  ja: |
+    次の非同期Pythonコードには、デッドロックを引き起こしたりイベントループをブロックしたりする誤ったasync/awaitの使用があります。すべての問題を見つけて修正してください:
+
+    ```python
+    import asyncio
+    import time
+
+    async def fetch_data(url):
+        """URLからデータを取得するシミュレーション。"""
+        time.sleep(2)  # バグ: イベントループをブロック
+        return f"data from {url}"
+
+    async def process_all(urls):
+        """すべてのURLを取得して結果を返します。"""
+        results = []
+        for url in urls:
+            result = fetch_data(url)  # バグ: awaitが欠如
+            results.append(result)
+        return results
+
+    async def get_with_timeout(url, timeout=5):
+        """タイムアウト付きでURLを取得します。"""
+        try:
+            result = await fetch_data(url)
+            return result
+        except asyncio.TimeoutError:
+            return None
+        # バグ: タイムアウトが実際に適用されない
+
+    def run_sync(coro):
+        """同期コードからコルーチンを実行します。"""
+        loop = asyncio.get_event_loop()  # バグ: 非推奨のパターン
+        return loop.run_until_complete(coro)
+
+    async def producer_consumer():
+        queue = asyncio.Queue()
+        async def producer():
+            for i in range(5):
+                await queue.put(i)
+            # バグ: コンシューマーが永遠に待機（センチネル値なし）
+
+        async def consumer():
+            while True:
+                item = await queue.get()
+                print(f"Consumed: {item}")
+                queue.task_done()
+
+        await asyncio.gather(producer(), consumer())
+    ```
+
+    各バグについて: 問題を特定し、実行時の結果を説明し、修正された非同期コードを提供してください。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: |
+          import asyncio
+          async def test():
+              results = await process_all(["http://a.com", "http://b.com"])
+              return len(results)
+          asyncio.run(test())
+        expected: "2"
+      - input: |
+          import asyncio
+          async def test_timeout():
+              result = await get_with_timeout("http://slow.com", timeout=0.01)
+              return result is None
+          asyncio.run(test_timeout())
+        expected: "True"
+      - input: "run_sync(asyncio.sleep(0))"
+        expected: "None"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Replaces time.sleep(2) with await asyncio.sleep(2) in fetch_data"
+      - "Adds await before fetch_data(url) in process_all, or uses asyncio.gather for concurrency"
+      - "Wraps fetch_data call with asyncio.wait_for(fetch_data(url), timeout=timeout) in get_with_timeout"
+      - "Replaces asyncio.get_event_loop().run_until_complete() with asyncio.run() in run_sync"
+      - "Fixes producer_consumer by sending a sentinel (e.g., None) after producing all items"

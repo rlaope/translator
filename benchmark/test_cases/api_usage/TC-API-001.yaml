@@ -1,0 +1,48 @@
+id: TC-API-001
+category: api_usage
+difficulty: easy
+tags: [requests, http, error-handling, python, rest]
+
+prompts:
+  en: |
+    Write a Python function `fetch_json(url, timeout=10, retries=3)` using the `requests` library that:
+    - Makes a GET request to the given URL
+    - Sets the specified timeout (in seconds)
+    - Retries up to `retries` times on connection errors or 5xx responses
+    - Returns the parsed JSON response as a Python dict/list on success
+    - Raises a custom `FetchError` exception with a descriptive message on final failure
+    - Sets appropriate headers: `Accept: application/json`, `User-Agent: benchmark/1.0`
+
+    Include the `FetchError` class definition and example usage in a `if __name__ == "__main__"` block fetching from `https://httpbin.org/get`.
+  ko: |
+    `requests` 라이브러리를 사용하여 다음을 수행하는 Python 함수 `fetch_json(url, timeout=10, retries=3)`을 작성하세요:
+    - 주어진 URL로 GET 요청 수행
+    - 지정된 타임아웃(초) 설정
+    - 연결 오류 또는 5xx 응답 시 최대 `retries`번 재시도
+    - 성공 시 파싱된 JSON 응답을 Python dict/list로 반환
+    - 최종 실패 시 설명적인 메시지와 함께 커스텀 `FetchError` 예외 발생
+    - 적절한 헤더 설정: `Accept: application/json`, `User-Agent: benchmark/1.0`
+
+    `FetchError` 클래스 정의와 `https://httpbin.org/get`에서 가져오는 `if __name__ == "__main__"` 블록의 예제 사용법을 포함하세요.
+  ja: |
+    `requests`ライブラリを使用して以下を行うPython関数`fetch_json(url, timeout=10, retries=3)`を実装してください:
+    - 指定されたURLにGETリクエストを行う
+    - 指定されたタイムアウト（秒）を設定する
+    - 接続エラーまたは5xxレスポンスに対して最大`retries`回再試行する
+    - 成功時にパースされたJSONレスポンスをPythonのdict/listとして返す
+    - 最終的な失敗時に説明的なメッセージを持つカスタム`FetchError`例外を発生させる
+    - 適切なヘッダーを設定する: `Accept: application/json`、`User-Agent: benchmark/1.0`
+
+    `FetchError`クラスの定義と、`https://httpbin.org/get`からフェッチする`if __name__ == "__main__"`ブロックのサンプル使用法を含めてください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines a custom FetchError exception class inheriting from Exception"
+    - "Uses requests.get() with timeout parameter"
+    - "Implements retry logic using a loop (for/while) that retries on ConnectionError or HTTPError with 5xx status"
+    - "Sets Accept and User-Agent headers"
+    - "Returns response.json() on success"
+    - "Raises FetchError with an informative message after exhausting retries"
+    - "Includes if __name__ == '__main__' example block"
+  scoring_notes: "Deduct points if retry logic is missing or headers are not set. Partial credit if retries are implemented but only for one error type."

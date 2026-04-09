@@ -1,0 +1,85 @@
+id: TC-CODE-010
+category: coding
+difficulty: hard
+tags: [graph, dijkstra, shortest-path, priority-queue, weighted-graph]
+
+prompts:
+  en: |
+    Implement Dijkstra's shortest path algorithm in Python. Write a function:
+
+    ```python
+    def dijkstra(graph: dict[str, list[tuple[str, float]]], start: str, end: str) -> tuple[float, list[str]]:
+    ```
+
+    Where `graph` is an adjacency list mapping each node to a list of `(neighbor, weight)` tuples. The function should return a tuple of `(total_distance, path)` where `path` is the list of nodes from `start` to `end`.
+
+    Requirements:
+    - Use a min-heap (heapq) for O((V + E) log V) complexity
+    - Return `(float('inf'), [])` if no path exists
+    - Handle graphs with a single node
+    - Support non-integer weights
+    - The returned path must include both the start and end nodes
+
+    Also write `build_graph(edges, directed=False)` that constructs the adjacency list from a list of `(node1, node2, weight)` tuples.
+  ko: |
+    Python에서 다익스트라 최단 경로 알고리즘을 구현하세요. 다음 함수를 작성하세요:
+
+    ```python
+    def dijkstra(graph: dict[str, list[tuple[str, float]]], start: str, end: str) -> tuple[float, list[str]]:
+    ```
+
+    `graph`는 각 노드를 `(이웃, 가중치)` 튜플 목록에 매핑하는 인접 리스트입니다. 함수는 `(총 거리, 경로)` 튜플을 반환해야 하며, `path`는 `start`에서 `end`까지의 노드 목록입니다.
+
+    요구사항:
+    - O((V + E) log V) 복잡도를 위해 최소 힙(heapq) 사용
+    - 경로가 없으면 `(float('inf'), [])` 반환
+    - 노드가 하나인 그래프 처리
+    - 정수가 아닌 가중치 지원
+    - 반환된 경로는 시작 노드와 끝 노드를 모두 포함해야 함
+
+    `(노드1, 노드2, 가중치)` 튜플 목록에서 인접 리스트를 구성하는 `build_graph(edges, directed=False)`도 작성하세요.
+  ja: |
+    Pythonでダイクストラ最短経路アルゴリズムを実装してください。以下の関数を作成してください:
+
+    ```python
+    def dijkstra(graph: dict[str, list[tuple[str, float]]], start: str, end: str) -> tuple[float, list[str]]:
+    ```
+
+    `graph`は各ノードを`(隣接ノード, 重み)`タプルのリストにマッピングする隣接リストです。関数は`(総距離, パス)`のタプルを返す必要があり、`path`は`start`から`end`までのノードのリストです。
+
+    要件:
+    - O((V + E) log V)の複雑度のためにmin-heap（heapq）を使用する
+    - パスが存在しない場合は`(float('inf'), [])`を返す
+    - 単一ノードのグラフを処理する
+    - 整数以外の重みをサポートする
+    - 返されるパスは開始ノードと終了ノードの両方を含む必要がある
+
+    `(ノード1, ノード2, 重み)`タプルのリストから隣接リストを構築する`build_graph(edges, directed=False)`も実装してください。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: |
+        edges = [("A","B",1),("A","C",4),("B","C",2),("B","D",5),("C","D",1)]
+        g = build_graph(edges)
+        dist, path = dijkstra(g, "A", "D")
+        (dist, path)
+      expected: "(4, ['A', 'B', 'C', 'D'])"
+    - input: |
+        edges = [("X","Y",10)]
+        g = build_graph(edges)
+        dijkstra(g, "X", "Z")
+      expected: "(inf, [])"
+    - input: |
+        g = build_graph([])
+        g["A"] = []
+        dijkstra(g, "A", "A")
+      expected: "(0, ['A'])"
+    - input: |
+        edges = [("A","B",1.5),("B","C",2.5),("A","C",5.0)]
+        g = build_graph(edges)
+        dist, path = dijkstra(g, "A", "C")
+        (round(dist, 1), path)
+      expected: "(4.0, ['A', 'B', 'C'])"
+  timeout_seconds: 30

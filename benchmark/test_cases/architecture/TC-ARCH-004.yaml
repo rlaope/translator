@@ -1,0 +1,79 @@
+id: TC-ARCH-004
+category: architecture
+difficulty: medium
+tags: [cqrs, command-query, separation, design-pattern, python]
+
+prompts:
+  en: |
+    Implement the CQRS (Command Query Responsibility Segregation) pattern in Python for an e-commerce order system. Design:
+
+    **Commands (write side):**
+    - `PlaceOrderCommand(customer_id, items: list[OrderItem], shipping_address)`
+    - `CancelOrderCommand(order_id, reason)`
+    - `UpdateShippingCommand(order_id, new_address)`
+
+    **Queries (read side):**
+    - `GetOrderQuery(order_id) -> OrderReadModel`
+    - `ListCustomerOrdersQuery(customer_id, status_filter=None) -> list[OrderSummary]`
+    - `GetOrderStatsQuery(date_from, date_to) -> OrderStats`
+
+    **Infrastructure:**
+    - `CommandBus`: dispatches commands to registered handlers
+    - `QueryBus`: dispatches queries to registered handlers
+    - Separate write models (normalized) and read models (denormalized, optimized for display)
+    - Command handlers publish domain events (e.g., `OrderPlaced`, `OrderCancelled`)
+
+    Show how the read model is updated in response to domain events (eventual consistency). Use in-memory storage. Explain when CQRS adds value vs. when it is over-engineering.
+  ko: |
+    전자상거래 주문 시스템을 위해 Python에서 CQRS(커맨드 쿼리 책임 분리) 패턴을 구현하세요:
+
+    **커맨드 (쓰기 측):**
+    - `PlaceOrderCommand(customer_id, items: list[OrderItem], shipping_address)`
+    - `CancelOrderCommand(order_id, reason)`
+    - `UpdateShippingCommand(order_id, new_address)`
+
+    **쿼리 (읽기 측):**
+    - `GetOrderQuery(order_id) -> OrderReadModel`
+    - `ListCustomerOrdersQuery(customer_id, status_filter=None) -> list[OrderSummary]`
+    - `GetOrderStatsQuery(date_from, date_to) -> OrderStats`
+
+    **인프라:**
+    - `CommandBus`: 등록된 핸들러에 커맨드 디스패치
+    - `QueryBus`: 등록된 핸들러에 쿼리 디스패치
+    - 별도의 쓰기 모델(정규화)과 읽기 모델(비정규화, 표시 최적화)
+    - 커맨드 핸들러가 도메인 이벤트 발행 (예: `OrderPlaced`, `OrderCancelled`)
+
+    도메인 이벤트에 응답하여 읽기 모델이 업데이트되는 방법을 보여주세요(결과적 일관성). 인메모리 스토리지 사용. CQRS가 가치를 더하는 경우와 과도한 엔지니어링인 경우를 설명하세요.
+  ja: |
+    Eコマース注文システム用にPythonでCQRS（コマンドクエリ責務分離）パターンを実装してください:
+
+    **コマンド（書き込み側）:**
+    - `PlaceOrderCommand(customer_id, items: list[OrderItem], shipping_address)`
+    - `CancelOrderCommand(order_id, reason)`
+    - `UpdateShippingCommand(order_id, new_address)`
+
+    **クエリ（読み取り側）:**
+    - `GetOrderQuery(order_id) -> OrderReadModel`
+    - `ListCustomerOrdersQuery(customer_id, status_filter=None) -> list[OrderSummary]`
+    - `GetOrderStatsQuery(date_from, date_to) -> OrderStats`
+
+    **インフラストラクチャ:**
+    - `CommandBus`: 登録されたハンドラーにコマンドをディスパッチ
+    - `QueryBus`: 登録されたハンドラーにクエリをディスパッチ
+    - 別々の書き込みモデル（正規化）と読み取りモデル（非正規化、表示に最適化）
+    - コマンドハンドラーがドメインイベントを発行（例: `OrderPlaced`、`OrderCancelled`）
+
+    ドメインイベントに応答して読み取りモデルが更新される方法を示してください（結果整合性）。インメモリストレージを使用。CQRSが価値を追加するケースと過剰エンジニアリングになるケースを説明してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines Command dataclasses (PlaceOrderCommand, CancelOrderCommand, UpdateShippingCommand)"
+    - "Defines Query dataclasses (GetOrderQuery, ListCustomerOrdersQuery, GetOrderStatsQuery)"
+    - "CommandBus has register(command_type, handler) and dispatch(command) methods"
+    - "QueryBus has register(query_type, handler) and dispatch(query) methods"
+    - "Write model and read model are separate data structures"
+    - "Command handlers emit domain events (OrderPlaced, etc.)"
+    - "Read model is updated by subscribing to domain events (showing eventual consistency)"
+    - "Explains CQRS adds value for: high read/write ratio disparity, complex reporting, audit requirements"
+    - "Explains CQRS is overkill for: simple CRUD apps, small teams, low traffic"

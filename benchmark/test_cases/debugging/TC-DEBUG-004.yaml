@@ -1,0 +1,144 @@
+id: TC-DEBUG-004
+category: debugging
+difficulty: medium
+tags: [race-condition, threading, concurrency, shared-state, debugging]
+
+prompts:
+  en: |
+    The following Python code has a race condition in a shared counter used by multiple threads. Identify the race condition, explain why it occurs, and provide a thread-safe fix:
+
+    ```python
+    import threading
+    import time
+
+    class Counter:
+        def __init__(self):
+            self.value = 0
+
+        def increment(self):
+            current = self.value      # Read
+            time.sleep(0.0001)        # Simulate processing delay
+            self.value = current + 1  # Write
+
+        def get(self):
+            return self.value
+
+    def worker(counter, n):
+        for _ in range(n):
+            counter.increment()
+
+    # Expected: 1000, Actual: much less due to race condition
+    counter = Counter()
+    threads = [threading.Thread(target=worker, args=(counter, 100)) for _ in range(10)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    print(counter.get())  # Should print 1000 but doesn't
+    ```
+
+    Provide:
+    1. Explanation of the exact race condition (what interleaving causes the bug)
+    2. Fix using `threading.Lock`
+    3. Alternative fix using `threading.local` for thread-local state where appropriate
+    4. A version using `concurrent.futures.ThreadPoolExecutor` with proper synchronization
+  ko: |
+    다음 Python 코드에는 여러 스레드가 사용하는 공유 카운터에 경쟁 조건이 있습니다. 경쟁 조건을 식별하고, 발생 이유를 설명하고, 스레드 안전한 수정 방법을 제공하세요:
+
+    ```python
+    import threading
+    import time
+
+    class Counter:
+        def __init__(self):
+            self.value = 0
+
+        def increment(self):
+            current = self.value      # 읽기
+            time.sleep(0.0001)        # 처리 지연 시뮬레이션
+            self.value = current + 1  # 쓰기
+
+        def get(self):
+            return self.value
+
+    def worker(counter, n):
+        for _ in range(n):
+            counter.increment()
+
+    # 예상: 1000, 실제: 경쟁 조건으로 인해 훨씬 적음
+    counter = Counter()
+    threads = [threading.Thread(target=worker, args=(counter, 100)) for _ in range(10)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    print(counter.get())  # 1000을 출력해야 하지만 그렇지 않음
+    ```
+
+    다음을 제공하세요:
+    1. 정확한 경쟁 조건 설명 (어떤 인터리빙이 버그를 유발하는지)
+    2. `threading.Lock`을 사용한 수정
+    3. 적절한 경우 스레드 로컬 상태를 위한 `threading.local` 사용 대안
+    4. 적절한 동기화가 있는 `concurrent.futures.ThreadPoolExecutor`를 사용한 버전
+  ja: |
+    次のPythonコードには、複数のスレッドが使用する共有カウンターに競合状態があります。競合状態を特定し、発生する理由を説明し、スレッドセーフな修正を提供してください:
+
+    ```python
+    import threading
+    import time
+
+    class Counter:
+        def __init__(self):
+            self.value = 0
+
+        def increment(self):
+            current = self.value      # 読み取り
+            time.sleep(0.0001)        # 処理遅延のシミュレーション
+            self.value = current + 1  # 書き込み
+
+        def get(self):
+            return self.value
+
+    def worker(counter, n):
+        for _ in range(n):
+            counter.increment()
+
+    # 期待値: 1000、実際: 競合状態により大幅に少ない
+    counter = Counter()
+    threads = [threading.Thread(target=worker, args=(counter, 100)) for _ in range(10)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    print(counter.get())  # 1000を出力するはずだが出力しない
+    ```
+
+    以下を提供してください:
+    1. 正確な競合状態の説明（どのインターリービングがバグを引き起こすか）
+    2. `threading.Lock`を使用した修正
+    3. 適切な場合にスレッドローカル状態のための`threading.local`を使用した代替案
+    4. 適切な同期を持つ`concurrent.futures.ThreadPoolExecutor`を使用したバージョン
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: |
+          import threading, time
+          # Test that the fixed Counter reaches exactly 1000
+          counter = Counter()
+          threads = [threading.Thread(target=lambda: [counter.increment() for _ in range(100)]) for _ in range(10)]
+          for t in threads: t.start()
+          for t in threads: t.join()
+          counter.get()
+        expected: "1000"
+      - input: |
+          import threading
+          # Test that lock is released even if exception occurs
+          counter = Counter()
+          counter.increment()
+          counter.get()
+        expected: "1"
+    timeout_seconds: 60
+  llm_judge:
+    criteria:
+      - "Correctly explains the read-modify-write race condition with the sleep simulating preemption"
+      - "Fixed Counter uses threading.Lock and acquires it in increment()"
+      - "Lock is acquired before reading self.value and released after writing"
+      - "Uses with self.lock: context manager (not manual acquire/release)"
+      - "Provides ThreadPoolExecutor version with correct synchronization"

@@ -1,0 +1,56 @@
+id: TC-ARCH-001
+category: architecture
+difficulty: easy
+tags: [singleton, design-pattern, creational, thread-safety, python]
+
+prompts:
+  en: |
+    Implement the Singleton design pattern in Python. Provide THREE different implementations and discuss the trade-offs of each:
+
+    1. **Classic `__new__` override**: Override `__new__` to return the same instance every time.
+    2. **Decorator-based**: Write a `singleton` decorator that can be applied to any class.
+    3. **Metaclass-based**: Implement a `SingletonMeta` metaclass.
+
+    For each implementation:
+    - Show how to use it with a concrete `DatabaseConfig` class that holds `host`, `port`, `database_name`
+    - Demonstrate that multiple instantiations return the same object (use `assert instance1 is instance2`)
+    - Make the implementation thread-safe for concurrent initialization
+
+    Also answer: when should you NOT use a Singleton? Name two design patterns that are often better alternatives.
+  ko: |
+    Python에서 싱글톤 디자인 패턴을 구현하세요. 세 가지 다른 구현 방법을 제공하고 각각의 트레이드오프를 논의하세요:
+
+    1. **클래식 `__new__` 오버라이드**: 매번 동일한 인스턴스를 반환하도록 `__new__`를 오버라이드
+    2. **데코레이터 기반**: 모든 클래스에 적용할 수 있는 `singleton` 데코레이터 작성
+    3. **메타클래스 기반**: `SingletonMeta` 메타클래스 구현
+
+    각 구현에 대해:
+    - `host`, `port`, `database_name`을 보유하는 구체적인 `DatabaseConfig` 클래스와 함께 사용 방법 표시
+    - 여러 번 인스턴스화해도 동일한 객체가 반환됨을 증명 (`assert instance1 is instance2` 사용)
+    - 동시 초기화에 대한 스레드 안전성 보장
+
+    또한 답변: 싱글톤을 사용하지 말아야 할 때는? 더 나은 대안인 두 가지 디자인 패턴을 제시하세요.
+  ja: |
+    PythonでSingletonデザインパターンを実装してください。3つの異なる実装を提供し、それぞれのトレードオフを議論してください:
+
+    1. **クラシック`__new__`オーバーライド**: 毎回同じインスタンスを返すように`__new__`をオーバーライド
+    2. **デコレーターベース**: 任意のクラスに適用できる`singleton`デコレーターを作成
+    3. **メタクラスベース**: `SingletonMeta`メタクラスを実装
+
+    各実装について:
+    - `host`、`port`、`database_name`を保持する具体的な`DatabaseConfig`クラスでの使用方法を示す
+    - 複数のインスタンス化が同じオブジェクトを返すことを実証（`assert instance1 is instance2`を使用）
+    - 同時初期化に対してスレッドセーフにする
+
+    また回答: Singletonを使用すべきでない場合はいつ？より良い代替案として2つのデザインパターンを挙げてください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Provides all three implementations: __new__ override, decorator, and metaclass"
+    - "Each implementation uses threading.Lock for thread-safe initialization"
+    - "DatabaseConfig example class has host, port, database_name attributes"
+    - "Demonstrates assert instance1 is instance2 for each implementation"
+    - "Explains trade-offs: __new__ is simple but couples Singleton logic to class; decorator is flexible; metaclass is most Pythonic"
+    - "Names at least two anti-Singleton situations (e.g., testing difficulty, tight coupling, hidden dependencies)"
+    - "Mentions Dependency Injection or Borg pattern as alternatives"

@@ -1,0 +1,88 @@
+id: TC-ARCH-008
+category: architecture
+difficulty: hard
+tags: [distributed-consensus, raft, leader-election, replication, python]
+
+prompts:
+  en: |
+    Design a simplified Raft-like distributed consensus system in Python for educational purposes. Implement the core concepts (not a production-ready Raft, but demonstrating the principles):
+
+    **Node States:**
+    - `FOLLOWER`: Default state. Accepts log entries from leader.
+    - `CANDIDATE`: Initiated when follower election timeout expires. Requests votes.
+    - `LEADER`: Won majority vote. Sends heartbeats and replicates log entries.
+
+    **Core Components:**
+    1. `RaftNode` class with:
+       - `node_id: str`, `peers: list[str]`, `state: NodeState`
+       - `current_term: int`, `voted_for: str | None`
+       - `log: list[LogEntry]`, `commit_index: int`
+       - `request_vote(term, candidate_id, last_log_index, last_log_term) -> VoteResponse`
+       - `append_entries(term, leader_id, entries, commit_index) -> AppendResponse`
+       - `start_election()` - increments term, votes for self, sends RequestVote RPCs
+       - `apply_command(command: str)` - leader only, appends to log and replicates
+
+    2. `LogEntry` dataclass: `term: int`, `index: int`, `command: str`
+
+    3. Simulate a 5-node cluster with an in-process message bus (not real networking).
+
+    Show: leader election, log replication to majority, and what happens when the leader fails (new election). Explain the safety property: only one leader per term.
+  ko: |
+    교육 목적을 위해 Python에서 단순화된 Raft 유사 분산 합의 시스템을 설계하세요 (프로덕션 수준의 Raft가 아닌 원칙 시연):
+
+    **노드 상태:**
+    - `FOLLOWER`: 기본 상태. 리더로부터 로그 엔트리 수락.
+    - `CANDIDATE`: 팔로워 선거 타임아웃 만료 시 시작. 투표 요청.
+    - `LEADER`: 과반수 투표 획득. 하트비트 전송 및 로그 엔트리 복제.
+
+    **핵심 구성 요소:**
+    1. `RaftNode` 클래스:
+       - `node_id: str`, `peers: list[str]`, `state: NodeState`
+       - `current_term: int`, `voted_for: str | None`
+       - `log: list[LogEntry]`, `commit_index: int`
+       - `request_vote(term, candidate_id, last_log_index, last_log_term) -> VoteResponse`
+       - `append_entries(term, leader_id, entries, commit_index) -> AppendResponse`
+       - `start_election()` - 임기 증가, 자신에게 투표, RequestVote RPC 전송
+       - `apply_command(command: str)` - 리더만 가능, 로그에 추가하고 복제
+
+    2. `LogEntry` 데이터클래스: `term: int`, `index: int`, `command: str`
+
+    3. 인프로세스 메시지 버스(실제 네트워킹 아님)로 5노드 클러스터 시뮬레이션.
+
+    보여줄 내용: 리더 선출, 과반수에 대한 로그 복제, 리더 장애 시 발생하는 일(새 선거). 안전 속성 설명: 임기당 하나의 리더만 존재.
+  ja: |
+    教育目的のためにPythonで単純化されたRaft風の分散コンセンサスシステムを設計してください（本番レベルのRaftではなく、原則のデモンストレーション）:
+
+    **ノード状態:**
+    - `FOLLOWER`: デフォルト状態。リーダーからのログエントリを受け入れる。
+    - `CANDIDATE`: フォロワーの選挙タイムアウト切れ時に開始。票を要求する。
+    - `LEADER`: 過半数の票を獲得。ハートビートを送信し、ログエントリを複製。
+
+    **コアコンポーネント:**
+    1. `RaftNode`クラス:
+       - `node_id: str`、`peers: list[str]`、`state: NodeState`
+       - `current_term: int`、`voted_for: str | None`
+       - `log: list[LogEntry]`、`commit_index: int`
+       - `request_vote(term, candidate_id, last_log_index, last_log_term) -> VoteResponse`
+       - `append_entries(term, leader_id, entries, commit_index) -> AppendResponse`
+       - `start_election()` - 任期を増加し、自身に投票し、RequestVote RPCを送信
+       - `apply_command(command: str)` - リーダーのみ、ログに追加して複製
+
+    2. `LogEntry`データクラス: `term: int`、`index: int`、`command: str`
+
+    3. インプロセスメッセージバス（実際のネットワーキングではない）で5ノードクラスターをシミュレート。
+
+    示す内容: リーダー選出、過半数へのログ複製、リーダー障害時の動作（新しい選挙）。安全性プロパティを説明: 任期ごとにリーダーは1つのみ。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines NodeState enum with FOLLOWER, CANDIDATE, LEADER states"
+    - "RaftNode has current_term, voted_for, log, commit_index attributes"
+    - "request_vote grants vote only if term >= current_term and candidate log is at least as up-to-date"
+    - "start_election increments term, votes for self, sends RequestVote to all peers"
+    - "Becomes LEADER only after receiving votes from majority (> n/2 peers)"
+    - "append_entries rejects entries if term < current_term"
+    - "Leader sends empty append_entries as heartbeats to prevent new elections"
+    - "Demonstrates 5-node cluster simulation with leader election"
+    - "Explains that safety is guaranteed by: only one node wins majority per term"

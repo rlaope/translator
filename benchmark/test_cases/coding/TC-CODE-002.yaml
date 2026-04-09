@@ -1,0 +1,32 @@
+id: TC-CODE-002
+category: coding
+difficulty: easy
+tags: [linked-list, data-structures, reversal, pointers]
+
+prompts:
+  en: |
+    Define a `ListNode` class with `val` and `next` attributes. Then write a function `reverse_linked_list(head)` that reverses a singly linked list in-place and returns the new head node.
+
+    Include a helper function `list_to_array(head)` that converts a linked list to a Python list for easy verification, and `array_to_list(arr)` that converts a Python list to a linked list.
+  ko: |
+    `val`과 `next` 속성을 가진 `ListNode` 클래스를 정의하세요. 그런 다음 단일 연결 리스트를 제자리에서 역순으로 뒤집고 새로운 헤드 노드를 반환하는 함수 `reverse_linked_list(head)`를 작성하세요.
+
+    검증을 위해 연결 리스트를 Python 리스트로 변환하는 헬퍼 함수 `list_to_array(head)`와 Python 리스트를 연결 리스트로 변환하는 `array_to_list(arr)`도 포함하세요.
+  ja: |
+    `val`と`next`属性を持つ`ListNode`クラスを定義してください。次に、単方向連結リストをin-placeで逆順にし、新しい先頭ノードを返す関数`reverse_linked_list(head)`を実装してください。
+
+    検証のため、連結リストをPythonリストに変換するヘルパー関数`list_to_array(head)`と、PythonリストをLinkedListに変換する`array_to_list(arr)`も含めてください。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: "list_to_array(reverse_linked_list(array_to_list([1, 2, 3, 4, 5])))"
+      expected: "[5, 4, 3, 2, 1]"
+    - input: "list_to_array(reverse_linked_list(array_to_list([1, 2])))"
+      expected: "[2, 1]"
+    - input: "list_to_array(reverse_linked_list(array_to_list([42])))"
+      expected: "[42]"
+    - input: "reverse_linked_list(None)"
+      expected: "None"
+  timeout_seconds: 30

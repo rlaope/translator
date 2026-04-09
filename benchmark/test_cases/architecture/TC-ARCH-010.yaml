@@ -1,0 +1,94 @@
+id: TC-ARCH-010
+category: architecture
+difficulty: hard
+tags: [multi-tenant, saas, data-isolation, security, python]
+
+prompts:
+  en: |
+    Design a multi-tenant SaaS data isolation architecture in Python. Present and implement THREE isolation strategies with their trade-offs:
+
+    **Strategy 1: Shared Database, Shared Schema (Row-Level Security)**
+    - Every table has a `tenant_id` column
+    - Middleware automatically injects `tenant_id` filter into all queries
+    - Implement `TenantContext` (contextvars) to hold current tenant
+    - Implement `TenantAwareSQLAlchemy` session that automatically applies WHERE tenant_id = :tid to all queries
+
+    **Strategy 2: Shared Database, Separate Schemas**
+    - Each tenant gets their own PostgreSQL schema (e.g., `tenant_abc.users`)
+    - `SchemaRouter` middleware sets `search_path` per request
+    - Show schema creation, migration, and `search_path` management
+
+    **Strategy 3: Separate Databases**
+    - Each tenant has a completely separate database connection string
+    - `TenantDatabaseRouter` resolves the correct engine per tenant
+    - Connection pool management per tenant
+
+    **Common Infrastructure:**
+    - `TenantMiddleware` (FastAPI): extracts tenant from subdomain or `X-Tenant-ID` header
+    - `TenantRegistry`: maps tenant slugs to their configuration (strategy, connection info)
+    - `CrossTenantError`: raised if any query would access another tenant's data
+
+    Discuss: when to choose each strategy based on tenant count, compliance requirements, and operational complexity.
+  ko: |
+    Python에서 멀티 테넌트 SaaS 데이터 격리 아키텍처를 설계하세요. 세 가지 격리 전략과 그 트레이드오프를 제시하고 구현하세요:
+
+    **전략 1: 공유 데이터베이스, 공유 스키마 (행 수준 보안)**
+    - 모든 테이블에 `tenant_id` 컬럼 존재
+    - 미들웨어가 모든 쿼리에 `tenant_id` 필터를 자동으로 주입
+    - 현재 테넌트를 보유하는 `TenantContext` (contextvars) 구현
+    - 모든 쿼리에 WHERE tenant_id = :tid를 자동으로 적용하는 `TenantAwareSQLAlchemy` 세션 구현
+
+    **전략 2: 공유 데이터베이스, 별도 스키마**
+    - 각 테넌트는 고유한 PostgreSQL 스키마 획득 (예: `tenant_abc.users`)
+    - `SchemaRouter` 미들웨어가 요청별로 `search_path` 설정
+    - 스키마 생성, 마이그레이션, `search_path` 관리 표시
+
+    **전략 3: 별도 데이터베이스**
+    - 각 테넌트는 완전히 별도의 데이터베이스 연결 문자열 보유
+    - `TenantDatabaseRouter`가 테넌트별로 올바른 엔진 해결
+    - 테넌트별 연결 풀 관리
+
+    **공통 인프라:**
+    - `TenantMiddleware` (FastAPI): 서브도메인 또는 `X-Tenant-ID` 헤더에서 테넌트 추출
+    - `TenantRegistry`: 테넌트 슬러그를 해당 구성(전략, 연결 정보)에 매핑
+    - `CrossTenantError`: 쿼리가 다른 테넌트의 데이터에 접근하면 발생
+
+    논의: 테넌트 수, 컴플라이언스 요구사항, 운영 복잡성에 따라 각 전략 선택 시기.
+  ja: |
+    Pythonでマルチテナントのスaasデータ分離アーキテクチャを設計してください。3つの分離戦略とそのトレードオフを提示して実装してください:
+
+    **戦略1: 共有データベース、共有スキーマ（行レベルセキュリティ）**
+    - すべてのテーブルに`tenant_id`カラムが存在
+    - ミドルウェアがすべてのクエリに`tenant_id`フィルターを自動注入
+    - 現在のテナントを保持する`TenantContext`（contextvars）を実装
+    - すべてのクエリに自動的にWHERE tenant_id = :tidを適用する`TenantAwareSQLAlchemy`セッションを実装
+
+    **戦略2: 共有データベース、別スキーマ**
+    - 各テナントは独自のPostgreSQLスキーマを取得（例: `tenant_abc.users`）
+    - `SchemaRouter`ミドルウェアがリクエストごとに`search_path`を設定
+    - スキーマ作成、マイグレーション、`search_path`管理を示す
+
+    **戦略3: 別データベース**
+    - 各テナントは完全に別のデータベース接続文字列を持つ
+    - `TenantDatabaseRouter`がテナントごとに正しいエンジンを解決
+    - テナントごとの接続プール管理
+
+    **共通インフラストラクチャ:**
+    - `TenantMiddleware`（FastAPI）: サブドメインまたは`X-Tenant-ID`ヘッダーからテナントを抽出
+    - `TenantRegistry`: テナントスラッグをその設定（戦略、接続情報）にマッピング
+    - `CrossTenantError`: クエリが別のテナントのデータにアクセスしようとすると発生
+
+    議論: テナント数、コンプライアンス要件、運用の複雑さに基づく各戦略の選択時期。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Implements TenantContext using contextvars.ContextVar for request-scoped tenant storage"
+    - "Strategy 1: TenantAwareSQLAlchemy session or event listener automatically appends tenant_id filter"
+    - "Strategy 2: SchemaRouter sets PostgreSQL search_path per request using SET search_path TO"
+    - "Strategy 3: TenantDatabaseRouter maintains a dict of engines keyed by tenant_id"
+    - "TenantMiddleware extracts tenant from X-Tenant-ID header or subdomain and sets TenantContext"
+    - "CrossTenantError is raised when tenant_id mismatch is detected"
+    - "TenantRegistry stores tenant slug -> configuration mapping"
+    - "Discusses trade-offs: Strategy 1 is cheapest but leakage risk; Strategy 2 is balanced; Strategy 3 is most isolated but expensive"
+    - "Recommends Strategy 1 for high tenant count (>1000), Strategy 3 for high-compliance (HIPAA, finance)"

@@ -1,0 +1,89 @@
+id: TC-CODE-009
+category: coding
+difficulty: hard
+tags: [trie, autocomplete, data-structures, strings, prefix-tree]
+
+prompts:
+  en: |
+    Implement a `Trie` data structure in Python that supports autocomplete. The class must have:
+
+    ```python
+    class Trie:
+        def insert(self, word: str) -> None: ...
+        def search(self, word: str) -> bool: ...
+        def starts_with(self, prefix: str) -> bool: ...
+        def autocomplete(self, prefix: str, max_results: int = 10) -> list[str]: ...
+        def delete(self, word: str) -> bool: ...  # returns False if word not found
+    ```
+
+    Requirements:
+    - `autocomplete` returns all words with the given prefix, sorted lexicographically, up to `max_results`
+    - `delete` should not remove nodes that are prefixes of other words
+    - Handle empty strings appropriately
+    - The implementation must be efficient: avoid recomputing the full word list on every autocomplete call
+  ko: |
+    자동완성을 지원하는 Python `Trie` 자료구조를 구현하세요. 클래스는 다음 메서드를 가져야 합니다:
+
+    ```python
+    class Trie:
+        def insert(self, word: str) -> None: ...
+        def search(self, word: str) -> bool: ...
+        def starts_with(self, prefix: str) -> bool: ...
+        def autocomplete(self, prefix: str, max_results: int = 10) -> list[str]: ...
+        def delete(self, word: str) -> bool: ...  # 단어를 찾지 못하면 False 반환
+    ```
+
+    요구사항:
+    - `autocomplete`는 주어진 접두사를 가진 모든 단어를 사전순으로 정렬하여 `max_results`개까지 반환
+    - `delete`는 다른 단어의 접두사인 노드를 제거해서는 안 됨
+    - 빈 문자열을 적절히 처리
+    - 구현이 효율적이어야 함: 자동완성 호출 시마다 전체 단어 목록을 재계산하지 않을 것
+  ja: |
+    オートコンプリートをサポートするPythonの`Trie`データ構造を実装してください。クラスには以下のメソッドが必要です:
+
+    ```python
+    class Trie:
+        def insert(self, word: str) -> None: ...
+        def search(self, word: str) -> bool: ...
+        def starts_with(self, prefix: str) -> bool: ...
+        def autocomplete(self, prefix: str, max_results: int = 10) -> list[str]: ...
+        def delete(self, word: str) -> bool: ...  # 単語が見つからない場合はFalseを返す
+    ```
+
+    要件:
+    - `autocomplete`は指定されたプレフィックスを持つすべての単語を辞書順にソートして`max_results`件まで返す
+    - `delete`は他の単語のプレフィックスであるノードを削除してはならない
+    - 空文字列を適切に処理する
+    - 実装は効率的である必要がある：オートコンプリートのたびに全単語リストを再計算しないこと
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: |
+        t = Trie()
+        for w in ["apple", "app", "application", "apply", "banana"]:
+            t.insert(w)
+        t.autocomplete("app")
+      expected: "['app', 'apple', 'application', 'apply']"
+    - input: |
+        t = Trie()
+        for w in ["apple", "app", "application", "apply"]:
+            t.insert(w)
+        [t.search("app"), t.search("ap"), t.starts_with("ap")]
+      expected: "[True, False, True]"
+    - input: |
+        t = Trie()
+        t.insert("apple")
+        t.insert("app")
+        r1 = t.delete("app")
+        r2 = t.search("app")
+        r3 = t.search("apple")
+        [r1, r2, r3]
+      expected: "[True, False, True]"
+    - input: |
+        t = Trie()
+        t.insert("cat")
+        t.autocomplete("xyz")
+      expected: "[]"
+  timeout_seconds: 30

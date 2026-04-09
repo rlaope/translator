@@ -1,0 +1,79 @@
+id: TC-API-008
+category: api_usage
+difficulty: hard
+tags: [graphql, strawberry, resolvers, schema, python]
+
+prompts:
+  en: |
+    Build a GraphQL API using Strawberry (Python) for a simple blog system. Implement:
+
+    **Types:**
+    - `Author`: id (ID), name (str), email (str), posts (list of Post, resolved lazily)
+    - `Post`: id (ID), title (str), body (str), published (bool), author_id (str), author (Author, resolved)
+    - `CreatePostInput`: title (str), body (str), author_id (str)
+
+    **Queries:**
+    - `posts(published_only: bool = False) -> list[Post]`
+    - `post(id: ID) -> Post | None`
+    - `authors -> list[Author]`
+    - `author(id: ID) -> Author | None`
+
+    **Mutations:**
+    - `create_post(input: CreatePostInput) -> Post`
+    - `publish_post(id: ID) -> Post | None`
+    - `delete_post(id: ID) -> bool`
+
+    Use in-memory dicts for data storage. Mount the GraphQL app on a FastAPI instance at `/graphql`. Enable the GraphiQL interface.
+  ko: |
+    간단한 블로그 시스템을 위해 Strawberry (Python)를 사용하여 GraphQL API를 구축하세요:
+
+    **타입:**
+    - `Author`: id (ID), name (str), email (str), posts (Post 목록, 지연 해결)
+    - `Post`: id (ID), title (str), body (str), published (bool), author_id (str), author (Author, 해결됨)
+    - `CreatePostInput`: title (str), body (str), author_id (str)
+
+    **쿼리:**
+    - `posts(published_only: bool = False) -> list[Post]`
+    - `post(id: ID) -> Post | None`
+    - `authors -> list[Author]`
+    - `author(id: ID) -> Author | None`
+
+    **뮤테이션:**
+    - `create_post(input: CreatePostInput) -> Post`
+    - `publish_post(id: ID) -> Post | None`
+    - `delete_post(id: ID) -> bool`
+
+    데이터 저장에 인메모리 dict를 사용하세요. FastAPI 인스턴스의 `/graphql`에 GraphQL 앱을 마운트하세요. GraphiQL 인터페이스를 활성화하세요.
+  ja: |
+    シンプルなブログシステム用にStrawberry（Python）を使用してGraphQL APIを構築してください:
+
+    **型:**
+    - `Author`: id（ID）、name（str）、email（str）、posts（Postのリスト、遅延解決）
+    - `Post`: id（ID）、title（str）、body（str）、published（bool）、author_id（str）、author（Author、解決済み）
+    - `CreatePostInput`: title（str）、body（str）、author_id（str）
+
+    **クエリ:**
+    - `posts(published_only: bool = False) -> list[Post]`
+    - `post(id: ID) -> Post | None`
+    - `authors -> list[Author]`
+    - `author(id: ID) -> Author | None`
+
+    **ミューテーション:**
+    - `create_post(input: CreatePostInput) -> Post`
+    - `publish_post(id: ID) -> Post | None`
+    - `delete_post(id: ID) -> bool`
+
+    データストレージにインメモリdictを使用してください。FastAPIインスタンスの`/graphql`にGraphQLアプリをマウントしてください。GraphiQLインターフェースを有効にしてください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Uses @strawberry.type decorator for Author and Post types"
+    - "Uses @strawberry.input for CreatePostInput"
+    - "Query class has posts, post, authors, author resolvers with correct signatures"
+    - "Mutation class has create_post, publish_post, delete_post methods"
+    - "Author.posts field is resolved by filtering posts by author_id"
+    - "Post.author field is resolved by looking up author_id in authors dict"
+    - "FastAPI app mounts strawberry.fastapi.GraphQLRouter at /graphql"
+    - "GraphiQL is enabled (graphiql=True)"
+  scoring_notes: "Deduct if resolvers are not implemented (returning raw data without resolving relations). Deduct if using graphene instead of strawberry."

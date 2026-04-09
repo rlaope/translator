@@ -1,0 +1,112 @@
+id: TC-ARCH-009
+category: architecture
+difficulty: hard
+tags: [real-time, notifications, websocket, pub-sub, scalability, python]
+
+prompts:
+  en: |
+    Design a real-time notification system capable of handling 100,000 concurrent users. Present the full architecture and implement the core components in Python:
+
+    **Architecture Requirements:**
+    - Users connect via WebSocket to receive real-time notifications
+    - Notifications can be targeted to: individual users, user groups, or broadcast to all
+    - System must scale horizontally (multiple gateway servers)
+    - Messages must not be lost if user is temporarily disconnected (at-least-once delivery)
+    - Each notification has: `id`, `type`, `payload`, `user_id`, `created_at`, `ttl`
+
+    **Core Components to Implement:**
+
+    1. `NotificationGateway` (FastAPI + WebSocket):
+       - Manages WebSocket connections per user
+       - Subscribes to a Redis Pub/Sub channel on connect
+       - Delivers messages to the correct WebSocket connections
+       - Handles reconnection and pending message delivery
+
+    2. `NotificationService`:
+       - `send_to_user(user_id, notification)`: publish to Redis channel `user:{user_id}`
+       - `send_to_group(group_id, notification)`: fan-out to all users in group
+       - `broadcast(notification)`: publish to `broadcast` channel
+       - Store undelivered notifications in Redis sorted set (by TTL)
+
+    3. `PendingMessageStore`:
+       - Store notifications for offline users
+       - `get_pending(user_id) -> list[Notification]`
+       - `mark_delivered(user_id, notification_ids)`
+       - Auto-expire notifications past their TTL
+
+    Explain how to scale to 100K users: connection pooling, Redis cluster, horizontal scaling.
+  ko: |
+    10만 명의 동시 사용자를 처리할 수 있는 실시간 알림 시스템을 설계하세요. 전체 아키텍처를 제시하고 Python에서 핵심 구성 요소를 구현하세요:
+
+    **아키텍처 요구사항:**
+    - 사용자는 WebSocket을 통해 연결하여 실시간 알림 수신
+    - 알림은 개별 사용자, 사용자 그룹, 또는 전체에 브로드캐스트 가능
+    - 수평 확장 가능 (여러 게이트웨이 서버)
+    - 사용자가 일시적으로 연결이 끊어져도 메시지 손실 없음 (최소 한 번 전달)
+    - 각 알림: `id`, `type`, `payload`, `user_id`, `created_at`, `ttl`
+
+    **구현할 핵심 구성 요소:**
+
+    1. `NotificationGateway` (FastAPI + WebSocket):
+       - 사용자별 WebSocket 연결 관리
+       - 연결 시 Redis Pub/Sub 채널 구독
+       - 올바른 WebSocket 연결에 메시지 전달
+       - 재연결 및 대기 중 메시지 전달 처리
+
+    2. `NotificationService`:
+       - `send_to_user(user_id, notification)`: Redis 채널 `user:{user_id}`에 발행
+       - `send_to_group(group_id, notification)`: 그룹의 모든 사용자에게 팬아웃
+       - `broadcast(notification)`: `broadcast` 채널에 발행
+       - Redis 정렬 집합(TTL 기준)에 미전달 알림 저장
+
+    3. `PendingMessageStore`:
+       - 오프라인 사용자를 위한 알림 저장
+       - `get_pending(user_id) -> list[Notification]`
+       - `mark_delivered(user_id, notification_ids)`
+       - TTL이 지난 알림 자동 만료
+
+    10만 사용자로 확장하는 방법 설명: 연결 풀링, Redis 클러스터, 수평 확장.
+  ja: |
+    10万人の同時ユーザーを処理できるリアルタイム通知システムを設計してください。完全なアーキテクチャを提示し、Pythonでコアコンポーネントを実装してください:
+
+    **アーキテクチャ要件:**
+    - ユーザーはWebSocket経由で接続してリアルタイム通知を受信
+    - 通知は個々のユーザー、ユーザーグループ、または全員へのブロードキャストが可能
+    - 水平スケール可能（複数のゲートウェイサーバー）
+    - ユーザーが一時的に切断されてもメッセージを失わない（少なくとも一度の配信）
+    - 各通知: `id`、`type`、`payload`、`user_id`、`created_at`、`ttl`
+
+    **実装するコアコンポーネント:**
+
+    1. `NotificationGateway`（FastAPI + WebSocket）:
+       - ユーザーごとのWebSocket接続を管理
+       - 接続時にRedis Pub/Subチャンネルをサブスクライブ
+       - 正しいWebSocket接続にメッセージを配信
+       - 再接続とペンディングメッセージの配信を処理
+
+    2. `NotificationService`:
+       - `send_to_user(user_id, notification)`: Redisチャンネル`user:{user_id}`に発行
+       - `send_to_group(group_id, notification)`: グループ内のすべてのユーザーにファンアウト
+       - `broadcast(notification)`: `broadcast`チャンネルに発行
+       - Redisソート済みセット（TTL基準）に未配信通知を保存
+
+    3. `PendingMessageStore`:
+       - オフラインユーザー向けの通知を保存
+       - `get_pending(user_id) -> list[Notification]`
+       - `mark_delivered(user_id, notification_ids)`
+       - TTLを過ぎた通知を自動期限切れ
+
+    10万ユーザーへのスケール方法を説明: コネクションプーリング、Redisクラスター、水平スケーリング。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Notification dataclass has id, type, payload, user_id, created_at, ttl fields"
+    - "NotificationGateway subscribes to Redis pub/sub on WebSocket connect and unsubscribes on disconnect"
+    - "WebSocket endpoint delivers pending messages from PendingMessageStore on reconnect"
+    - "NotificationService.send_to_user publishes to Redis channel user:{user_id}"
+    - "send_to_group fans out to individual user channels (not one group channel)"
+    - "PendingMessageStore uses Redis sorted set with TTL as score"
+    - "Explains horizontal scaling: sticky sessions or shared Redis pub/sub across gateway instances"
+    - "Mentions Redis cluster or Redis Sentinel for Redis high availability"
+    - "At least 80% of the code is implemented (not just pseudocode)"

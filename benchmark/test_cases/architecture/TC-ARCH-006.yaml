@@ -1,0 +1,93 @@
+id: TC-ARCH-006
+category: architecture
+difficulty: medium
+tags: [event-sourcing, audit-trail, domain-events, immutability, python]
+
+prompts:
+  en: |
+    Implement Event Sourcing in Python for a bank account domain to provide a complete audit trail. Design:
+
+    **Domain Events** (immutable dataclasses):
+    - `AccountOpened(account_id, owner_name, initial_balance, timestamp)`
+    - `MoneyDeposited(account_id, amount, description, timestamp)`
+    - `MoneyWithdrawn(account_id, amount, description, timestamp)`
+    - `AccountClosed(account_id, reason, timestamp)`
+
+    **BankAccount aggregate:**
+    - Reconstructed by replaying events from the event store
+    - `apply(event)` method mutates state based on event type
+    - `open(owner, initial_balance)`, `deposit(amount, desc)`, `withdraw(amount, desc)`, `close(reason)` generate events
+    - Business rules: cannot withdraw more than balance, cannot operate on closed account
+
+    **EventStore:**
+    - `append(account_id, events: list[Event])` with optimistic concurrency (version check)
+    - `load(account_id) -> list[Event]`
+    - `load_from_version(account_id, from_version: int) -> list[Event]`
+
+    **Projections:**
+    - `AccountBalanceProjection`: current balance per account
+    - `TransactionHistoryProjection`: list of all transactions for an account
+
+    Show time-travel debugging by reconstructing account state at any point in history.
+  ko: |
+    완전한 감사 추적을 제공하기 위해 은행 계좌 도메인에 Python에서 이벤트 소싱을 구현하세요:
+
+    **도메인 이벤트** (불변 데이터클래스):
+    - `AccountOpened(account_id, owner_name, initial_balance, timestamp)`
+    - `MoneyDeposited(account_id, amount, description, timestamp)`
+    - `MoneyWithdrawn(account_id, amount, description, timestamp)`
+    - `AccountClosed(account_id, reason, timestamp)`
+
+    **BankAccount 애그리게이트:**
+    - 이벤트 스토어에서 이벤트를 재생하여 재구성
+    - 이벤트 타입에 따라 상태를 변경하는 `apply(event)` 메서드
+    - `open(owner, initial_balance)`, `deposit(amount, desc)`, `withdraw(amount, desc)`, `close(reason)`는 이벤트 생성
+    - 비즈니스 규칙: 잔액 초과 인출 불가, 닫힌 계좌에서 작업 불가
+
+    **EventStore:**
+    - 낙관적 동시성(버전 확인)이 있는 `append(account_id, events: list[Event])`
+    - `load(account_id) -> list[Event]`
+    - `load_from_version(account_id, from_version: int) -> list[Event]`
+
+    **프로젝션:**
+    - `AccountBalanceProjection`: 계좌별 현재 잔액
+    - `TransactionHistoryProjection`: 계좌의 모든 거래 목록
+
+    히스토리의 어느 시점에서든 계좌 상태를 재구성하는 시간 여행 디버깅을 보여주세요.
+  ja: |
+    完全な監査証跡を提供するために、銀行口座ドメインにPythonでEvent Sourcingを実装してください:
+
+    **ドメインイベント**（不変データクラス）:
+    - `AccountOpened(account_id, owner_name, initial_balance, timestamp)`
+    - `MoneyDeposited(account_id, amount, description, timestamp)`
+    - `MoneyWithdrawn(account_id, amount, description, timestamp)`
+    - `AccountClosed(account_id, reason, timestamp)`
+
+    **BankAccount集約:**
+    - イベントストアからイベントを再生することで再構築
+    - イベントタイプに基づいて状態を変更する`apply(event)`メソッド
+    - `open(owner, initial_balance)`、`deposit(amount, desc)`、`withdraw(amount, desc)`、`close(reason)`がイベントを生成
+    - ビジネスルール: 残高以上の引き出し不可、閉鎖済み口座への操作不可
+
+    **EventStore:**
+    - 楽観的同時実行制御（バージョンチェック）を持つ`append(account_id, events: list[Event])`
+    - `load(account_id) -> list[Event]`
+    - `load_from_version(account_id, from_version: int) -> list[Event]`
+
+    **プロジェクション:**
+    - `AccountBalanceProjection`: 口座ごとの現在の残高
+    - `TransactionHistoryProjection`: 口座のすべての取引リスト
+
+    履歴の任意の時点で口座状態を再構築するタイムトラベルデバッグを示してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "All domain events are frozen dataclasses (frozen=True) with account_id and timestamp"
+    - "BankAccount.apply() dispatches to on_AccountOpened, on_MoneyDeposited etc. methods"
+    - "BankAccount is reconstructed by looping through stored events and calling apply()"
+    - "withdraw() raises ValueError if amount exceeds balance"
+    - "Operations raise ValueError if account is closed"
+    - "EventStore.append() checks expected_version against current version for optimistic concurrency"
+    - "Projections are rebuilt by iterating stored events"
+    - "Demonstrates time-travel by loading events up to a specific index and replaying"

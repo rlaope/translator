@@ -1,0 +1,81 @@
+id: TC-API-009
+category: api_usage
+difficulty: hard
+tags: [kubernetes, client-go, pods, python, k8s]
+
+prompts:
+  en: |
+    Using the official Kubernetes Python client (`kubernetes`), implement a `PodManager` class for managing pods in a Kubernetes cluster:
+
+    ```python
+    class PodManager:
+        def __init__(self, namespace: str = "default", in_cluster: bool = False): ...
+        def list_pods(self, label_selector: str = "") -> list[dict]: ...
+        def get_pod(self, name: str) -> dict | None: ...
+        def create_pod(self, name: str, image: str, labels: dict, env_vars: dict, cpu_limit: str, memory_limit: str) -> dict: ...
+        def delete_pod(self, name: str, grace_period: int = 30) -> bool: ...
+        def get_pod_logs(self, name: str, container: str = "", tail_lines: int = 100) -> str: ...
+        def wait_for_pod_ready(self, name: str, timeout: int = 120) -> bool: ...
+    ```
+
+    Requirements:
+    - Load config with `config.load_incluster_config()` when `in_cluster=True`, else `config.load_kube_config()`
+    - `list_pods` returns a list of dicts with `name`, `status`, `ip`, `node`, `labels`
+    - `create_pod` builds a proper `V1Pod` manifest with resource limits
+    - `wait_for_pod_ready` polls every 5 seconds checking for `Running` phase
+    - Handle `ApiException` from kubernetes client and raise descriptive errors
+    - Include type hints throughout
+  ko: |
+    공식 Kubernetes Python 클라이언트(`kubernetes`)를 사용하여 Kubernetes 클러스터에서 파드를 관리하는 `PodManager` 클래스를 구현하세요:
+
+    ```python
+    class PodManager:
+        def __init__(self, namespace: str = "default", in_cluster: bool = False): ...
+        def list_pods(self, label_selector: str = "") -> list[dict]: ...
+        def get_pod(self, name: str) -> dict | None: ...
+        def create_pod(self, name: str, image: str, labels: dict, env_vars: dict, cpu_limit: str, memory_limit: str) -> dict: ...
+        def delete_pod(self, name: str, grace_period: int = 30) -> bool: ...
+        def get_pod_logs(self, name: str, container: str = "", tail_lines: int = 100) -> str: ...
+        def wait_for_pod_ready(self, name: str, timeout: int = 120) -> bool: ...
+    ```
+
+    요구사항:
+    - `in_cluster=True`일 때 `config.load_incluster_config()`, 그렇지 않으면 `config.load_kube_config()`로 설정 로드
+    - `list_pods`는 `name`, `status`, `ip`, `node`, `labels`를 가진 dict 목록 반환
+    - `create_pod`는 리소스 제한이 있는 적절한 `V1Pod` 매니페스트 빌드
+    - `wait_for_pod_ready`는 `Running` 상태를 확인하며 5초마다 폴링
+    - kubernetes 클라이언트의 `ApiException` 처리 및 설명적인 오류 발생
+    - 전체에 타입 힌트 포함
+  ja: |
+    公式のKubernetes Pythonクライアント（`kubernetes`）を使用して、Kubernetesクラスターでポッドを管理する`PodManager`クラスを実装してください:
+
+    ```python
+    class PodManager:
+        def __init__(self, namespace: str = "default", in_cluster: bool = False): ...
+        def list_pods(self, label_selector: str = "") -> list[dict]: ...
+        def get_pod(self, name: str) -> dict | None: ...
+        def create_pod(self, name: str, image: str, labels: dict, env_vars: dict, cpu_limit: str, memory_limit: str) -> dict: ...
+        def delete_pod(self, name: str, grace_period: int = 30) -> bool: ...
+        def get_pod_logs(self, name: str, container: str = "", tail_lines: int = 100) -> str: ...
+        def wait_for_pod_ready(self, name: str, timeout: int = 120) -> bool: ...
+    ```
+
+    要件:
+    - `in_cluster=True`の場合`config.load_incluster_config()`、そうでない場合`config.load_kube_config()`で設定をロード
+    - `list_pods`は`name`、`status`、`ip`、`node`、`labels`を持つdictのリストを返す
+    - `create_pod`はリソース制限を持つ適切な`V1Pod`マニフェストを構築する
+    - `wait_for_pod_ready`は`Running`フェーズを確認しながら5秒ごとにポーリング
+    - kubernetesクライアントの`ApiException`を処理し、説明的なエラーを発生させる
+    - 全体にタイプヒントを含める
+
+validation:
+  type: llm_judge
+  criteria:
+    - "PodManager.__init__ calls load_incluster_config or load_kube_config based on in_cluster flag"
+    - "Uses CoreV1Api() for all pod operations"
+    - "list_pods uses list_namespaced_pod() with label_selector and extracts name/status/ip/node/labels"
+    - "create_pod builds V1Pod with V1Container, V1ResourceRequirements for limits"
+    - "delete_pod uses delete_namespaced_pod() and handles 404 ApiException returning False"
+    - "wait_for_pod_ready polls with time.sleep(5) and respects timeout"
+    - "get_pod_logs uses read_namespaced_pod_log() with tail_lines parameter"
+  scoring_notes: "Deduct if V1Pod manifest is missing resource limits. Deduct if ApiException is not caught. Deduct if wait_for_pod_ready does not have a timeout mechanism."

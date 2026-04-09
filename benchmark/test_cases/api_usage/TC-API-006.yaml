@@ -1,0 +1,81 @@
+id: TC-API-006
+category: api_usage
+difficulty: medium
+tags: [redis, caching, expiry, python, aioredis]
+
+prompts:
+  en: |
+    Implement a Redis caching layer in Python using `redis-py` (sync) with the following:
+
+    1. A `Cache` class that wraps a Redis connection:
+       ```python
+       class Cache:
+           def __init__(self, host="localhost", port=6379, db=0, default_ttl=300): ...
+           def get(self, key: str) -> Any | None: ...
+           def set(self, key: str, value: Any, ttl: int | None = None) -> None: ...
+           def delete(self, key: str) -> bool: ...
+           def exists(self, key: str) -> bool: ...
+           def get_or_set(self, key: str, factory: Callable, ttl: int | None = None) -> Any: ...
+       ```
+
+    2. Values should be serialized with `json.dumps` and deserialized with `json.loads` to support complex types.
+
+    3. A `cache_result(key_prefix, ttl=300)` decorator that caches the return value of a function using `key_prefix:arg1:arg2:...` as the cache key.
+
+    4. Include a connection health check method `ping() -> bool`.
+
+    5. Show example usage caching an expensive computation.
+  ko: |
+    `redis-py` (동기)를 사용하여 Python에서 Redis 캐싱 레이어를 구현하세요:
+
+    1. Redis 연결을 래핑하는 `Cache` 클래스:
+       ```python
+       class Cache:
+           def __init__(self, host="localhost", port=6379, db=0, default_ttl=300): ...
+           def get(self, key: str) -> Any | None: ...
+           def set(self, key: str, value: Any, ttl: int | None = None) -> None: ...
+           def delete(self, key: str) -> bool: ...
+           def exists(self, key: str) -> bool: ...
+           def get_or_set(self, key: str, factory: Callable, ttl: int | None = None) -> Any: ...
+       ```
+
+    2. 복잡한 타입을 지원하기 위해 `json.dumps`로 직렬화하고 `json.loads`로 역직렬화해야 합니다.
+
+    3. `key_prefix:arg1:arg2:...`를 캐시 키로 사용하여 함수의 반환값을 캐시하는 `cache_result(key_prefix, ttl=300)` 데코레이터.
+
+    4. 연결 상태 확인 메서드 `ping() -> bool` 포함.
+
+    5. 비용이 많이 드는 연산을 캐싱하는 예제 사용법 표시.
+  ja: |
+    `redis-py`（同期）を使用してPythonでRedisキャッシングレイヤーを実装してください:
+
+    1. Redis接続をラップする`Cache`クラス:
+       ```python
+       class Cache:
+           def __init__(self, host="localhost", port=6379, db=0, default_ttl=300): ...
+           def get(self, key: str) -> Any | None: ...
+           def set(self, key: str, value: Any, ttl: int | None = None) -> None: ...
+           def delete(self, key: str) -> bool: ...
+           def exists(self, key: str) -> bool: ...
+           def get_or_set(self, key: str, factory: Callable, ttl: int | None = None) -> Any: ...
+       ```
+
+    2. 複雑な型をサポートするために`json.dumps`でシリアライズし、`json.loads`でデシリアライズする必要があります。
+
+    3. `key_prefix:arg1:arg2:...`をキャッシュキーとして使用して関数の戻り値をキャッシュする`cache_result(key_prefix, ttl=300)`デコレーター。
+
+    4. 接続ヘルスチェックメソッド`ping() -> bool`を含める。
+
+    5. 高コストな計算をキャッシュするサンプル使用法を示す。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Cache class is initialized with redis.Redis() using provided host/port/db"
+    - "get() deserializes with json.loads, returns None for cache miss"
+    - "set() serializes with json.dumps and uses ex= parameter for TTL"
+    - "get_or_set() checks cache first, calls factory() on miss, stores result"
+    - "cache_result decorator builds key from key_prefix and function arguments"
+    - "ping() calls self.client.ping() and returns bool"
+    - "delete() returns True if key was deleted, False if not found"
+  scoring_notes: "Deduct if JSON serialization is missing (would not support dicts/lists). Deduct if get_or_set does not call factory on cache miss."

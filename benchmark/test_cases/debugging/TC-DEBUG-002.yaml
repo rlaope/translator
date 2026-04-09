@@ -1,0 +1,110 @@
+id: TC-DEBUG-002
+category: debugging
+difficulty: easy
+tags: [null-check, typeerror, defensive-programming, debugging]
+
+prompts:
+  en: |
+    The following Python code has missing null/None checks that cause TypeErrors at runtime. Find all bugs and fix them:
+
+    ```python
+    def get_user_display_name(user):
+        """Returns 'FirstName LastName (username)' format."""
+        return f"{user['first_name'].strip()} {user['last_name'].strip()} ({user['username']})"
+
+    def calculate_average(numbers):
+        """Returns the average of a list of numbers."""
+        return sum(numbers) / len(numbers)
+
+    def get_nested_config(config, *keys):
+        """Safely retrieve a nested config value by key path."""
+        result = config
+        for key in keys:
+            result = result[key]
+        return result
+
+    def format_phone(phone_number):
+        """Format phone as +1-XXX-XXX-XXXX."""
+        digits = ''.join(filter(str.isdigit, phone_number))
+        return f"+1-{digits[1:4]}-{digits[4:7]}-{digits[7:11]}"
+    ```
+
+    For each function: (1) describe what input would cause a crash, (2) fix the bug with appropriate None/empty handling, (3) specify what the function should return for invalid input.
+  ko: |
+    다음 Python 코드에는 런타임 시 TypeError를 유발하는 null/None 검사가 누락되어 있습니다. 모든 버그를 찾아 수정하세요:
+
+    ```python
+    def get_user_display_name(user):
+        """'이름 성 (사용자명)' 형식을 반환합니다."""
+        return f"{user['first_name'].strip()} {user['last_name'].strip()} ({user['username']})"
+
+    def calculate_average(numbers):
+        """숫자 리스트의 평균을 반환합니다."""
+        return sum(numbers) / len(numbers)
+
+    def get_nested_config(config, *keys):
+        """키 경로로 중첩된 설정 값을 안전하게 검색합니다."""
+        result = config
+        for key in keys:
+            result = result[key]
+        return result
+
+    def format_phone(phone_number):
+        """전화번호를 +1-XXX-XXX-XXXX 형식으로 포맷합니다."""
+        digits = ''.join(filter(str.isdigit, phone_number))
+        return f"+1-{digits[1:4]}-{digits[4:7]}-{digits[7:11]}"
+    ```
+
+    각 함수에 대해: (1) 크래시를 유발하는 입력 설명, (2) 적절한 None/빈 값 처리로 버그 수정, (3) 잘못된 입력에 대해 함수가 반환해야 할 값 지정.
+  ja: |
+    次のPythonコードには、実行時にTypeErrorを引き起こすnull/Noneチェックが欠けています。すべてのバグを見つけて修正してください:
+
+    ```python
+    def get_user_display_name(user):
+        """'名前 苗字 (ユーザー名)' 形式を返します。"""
+        return f"{user['first_name'].strip()} {user['last_name'].strip()} ({user['username']})"
+
+    def calculate_average(numbers):
+        """数値リストの平均を返します。"""
+        return sum(numbers) / len(numbers)
+
+    def get_nested_config(config, *keys):
+        """キーパスでネストされた設定値を安全に取得します。"""
+        result = config
+        for key in keys:
+            result = result[key]
+        return result
+
+    def format_phone(phone_number):
+        """電話番号を+1-XXX-XXX-XXXX形式にフォーマットします。"""
+        digits = ''.join(filter(str.isdigit, phone_number))
+        return f"+1-{digits[1:4]}-{digits[4:7]}-{digits[7:11]}"
+    ```
+
+    各関数について: (1)クラッシュを引き起こす入力を説明、(2)適切なNone/空の処理でバグを修正、(3)無効な入力に対して関数が返すべき値を指定。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: "get_user_display_name({'first_name': 'John', 'last_name': 'Doe', 'username': 'jdoe'})"
+        expected: "'John Doe (jdoe)'"
+      - input: "get_user_display_name(None)"
+        expected: "None"
+      - input: "calculate_average([1, 2, 3, 4, 5])"
+        expected: "3.0"
+      - input: "calculate_average([])"
+        expected: "None"
+      - input: "get_nested_config({'db': {'host': 'localhost'}}, 'db', 'host')"
+        expected: "'localhost'"
+      - input: "get_nested_config({'db': {}}, 'db', 'missing_key')"
+        expected: "None"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Identifies that passing None as user causes AttributeError/TypeError"
+      - "Identifies division by zero when numbers is empty"
+      - "Identifies KeyError when a key in the path does not exist"
+      - "Identifies AttributeError when phone_number is None"
+      - "Fixed functions return None or a sensible default for invalid input"

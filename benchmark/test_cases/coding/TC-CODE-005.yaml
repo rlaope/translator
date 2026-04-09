@@ -1,0 +1,73 @@
+id: TC-CODE-005
+category: coding
+difficulty: medium
+tags: [cache, lru, data-structures, design, ordered-dict]
+
+prompts:
+  en: |
+    Implement an `LRUCache` class in Python with the following interface:
+
+    ```python
+    class LRUCache:
+        def __init__(self, capacity: int): ...
+        def get(self, key: int) -> int: ...  # returns -1 if key not found
+        def put(self, key: int, value: int) -> None: ...
+    ```
+
+    Both `get` and `put` must operate in O(1) time. When the cache reaches capacity, evict the least recently used item before inserting a new one. Using `get` or `put` on an existing key counts as a recent use.
+
+    Do not use `functools.lru_cache` or `collections.OrderedDict` directly — implement the underlying doubly linked list and hash map yourself.
+  ko: |
+    다음 인터페이스를 가진 Python `LRUCache` 클래스를 구현하세요:
+
+    ```python
+    class LRUCache:
+        def __init__(self, capacity: int): ...
+        def get(self, key: int) -> int: ...  # 키가 없으면 -1 반환
+        def put(self, key: int, value: int) -> None: ...
+    ```
+
+    `get`과 `put` 모두 O(1) 시간에 동작해야 합니다. 캐시가 용량에 도달하면 새 항목을 삽입하기 전에 가장 오래 전에 사용된 항목을 제거하세요. 기존 키에 대한 `get` 또는 `put` 호출도 최근 사용으로 간주됩니다.
+
+    `functools.lru_cache`나 `collections.OrderedDict`를 직접 사용하지 마세요 — 이중 연결 리스트와 해시 맵을 직접 구현하세요.
+  ja: |
+    以下のインターフェースを持つPythonの`LRUCache`クラスを実装してください:
+
+    ```python
+    class LRUCache:
+        def __init__(self, capacity: int): ...
+        def get(self, key: int) -> int: ...  # キーが見つからない場合は-1を返す
+        def put(self, key: int, value: int) -> None: ...
+    ```
+
+    `get`と`put`の両方がO(1)時間で動作する必要があります。キャッシュが容量に達した場合、新しいアイテムを挿入する前に最も長い間使われていないアイテムを削除してください。既存のキーに対する`get`または`put`の呼び出しも最近の使用としてカウントされます。
+
+    `functools.lru_cache`や`collections.OrderedDict`を直接使用せず、二重連結リストとハッシュマップを自分で実装してください。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: |
+        cache = LRUCache(2)
+        cache.put(1, 1)
+        cache.put(2, 2)
+        r1 = cache.get(1)
+        cache.put(3, 3)
+        r2 = cache.get(2)
+        cache.put(4, 4)
+        r3 = cache.get(1)
+        r4 = cache.get(3)
+        r5 = cache.get(4)
+        [r1, r2, r3, r4, r5]
+      expected: "[1, -1, -1, 3, 4]"
+    - input: |
+        cache2 = LRUCache(1)
+        cache2.put(2, 1)
+        r1 = cache2.get(2)
+        cache2.put(3, 2)
+        r2 = cache2.get(2)
+        r3 = cache2.get(3)
+        [r1, r2, r3]
+      expected: "[1, -1, 2]"
+  timeout_seconds: 30

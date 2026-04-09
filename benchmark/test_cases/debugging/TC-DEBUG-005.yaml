@@ -1,0 +1,196 @@
+id: TC-DEBUG-005
+category: debugging
+difficulty: medium
+tags: [memory-leak, file-handles, context-manager, resources, debugging]
+
+prompts:
+  en: |
+    The following Python code has memory leaks from unclosed file handles and other resource leaks. Find all leaks and fix them:
+
+    ```python
+    import os
+    import tempfile
+
+    def process_log_files(log_dir):
+        """Process all .log files in a directory and return combined stats."""
+        results = []
+        for filename in os.listdir(log_dir):
+            if filename.endswith('.log'):
+                f = open(os.path.join(log_dir, filename), 'r')  # Never closed
+                lines = f.readlines()
+                results.append({
+                    'file': filename,
+                    'lines': len(lines),
+                    'size': os.path.getsize(os.path.join(log_dir, filename))
+                })
+        return results
+
+    def write_temp_report(data):
+        """Write data to a temp file and return the file path."""
+        tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
+        tmp.write(str(data))
+        # File handle left open
+        return tmp.name
+
+    def tail_file(filepath, n=10):
+        """Return the last n lines of a file."""
+        lines = []
+        f = open(filepath, 'r')
+        try:
+            lines = f.readlines()
+        except Exception as e:
+            print(f"Error: {e}")
+        # File not closed if no exception (missing finally)
+        return lines[-n:]
+
+    class DatabaseConnection:
+        def __init__(self, path):
+            import sqlite3
+            self.conn = sqlite3.connect(path)
+            self.cursor = self.conn.cursor()
+
+        def query(self, sql):
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        # No close() method or context manager support
+    ```
+
+    For each issue: (1) identify the leak, (2) explain the consequence, (3) provide fixed code using context managers where appropriate.
+  ko: |
+    다음 Python 코드에는 닫히지 않은 파일 핸들 및 기타 리소스 누수로 인한 메모리 누수가 있습니다. 모든 누수를 찾아 수정하세요:
+
+    ```python
+    import os
+    import tempfile
+
+    def process_log_files(log_dir):
+        """디렉토리의 모든 .log 파일을 처리하고 통합 통계를 반환합니다."""
+        results = []
+        for filename in os.listdir(log_dir):
+            if filename.endswith('.log'):
+                f = open(os.path.join(log_dir, filename), 'r')  # 닫히지 않음
+                lines = f.readlines()
+                results.append({
+                    'file': filename,
+                    'lines': len(lines),
+                    'size': os.path.getsize(os.path.join(log_dir, filename))
+                })
+        return results
+
+    def write_temp_report(data):
+        """데이터를 임시 파일에 쓰고 파일 경로를 반환합니다."""
+        tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
+        tmp.write(str(data))
+        # 파일 핸들이 열린 채로 방치
+        return tmp.name
+
+    def tail_file(filepath, n=10):
+        """파일의 마지막 n줄을 반환합니다."""
+        lines = []
+        f = open(filepath, 'r')
+        try:
+            lines = f.readlines()
+        except Exception as e:
+            print(f"Error: {e}")
+        # 예외가 없으면 파일이 닫히지 않음 (finally 없음)
+        return lines[-n:]
+
+    class DatabaseConnection:
+        def __init__(self, path):
+            import sqlite3
+            self.conn = sqlite3.connect(path)
+            self.cursor = self.conn.cursor()
+
+        def query(self, sql):
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        # close() 메서드나 컨텍스트 매니저 지원 없음
+    ```
+
+    각 문제에 대해: (1) 누수 식별, (2) 결과 설명, (3) 적절한 경우 컨텍스트 매니저를 사용한 수정 코드 제공.
+  ja: |
+    次のPythonコードには、閉じられていないファイルハンドルやその他のリソースリークによるメモリリークがあります。すべてのリークを見つけて修正してください:
+
+    ```python
+    import os
+    import tempfile
+
+    def process_log_files(log_dir):
+        """ディレクトリ内のすべての.logファイルを処理し、統合された統計を返します。"""
+        results = []
+        for filename in os.listdir(log_dir):
+            if filename.endswith('.log'):
+                f = open(os.path.join(log_dir, filename), 'r')  # 閉じられない
+                lines = f.readlines()
+                results.append({
+                    'file': filename,
+                    'lines': len(lines),
+                    'size': os.path.getsize(os.path.join(log_dir, filename))
+                })
+        return results
+
+    def write_temp_report(data):
+        """データを一時ファイルに書き込み、ファイルパスを返します。"""
+        tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
+        tmp.write(str(data))
+        # ファイルハンドルが開いたまま
+        return tmp.name
+
+    def tail_file(filepath, n=10):
+        """ファイルの最後のn行を返します。"""
+        lines = []
+        f = open(filepath, 'r')
+        try:
+            lines = f.readlines()
+        except Exception as e:
+            print(f"Error: {e}")
+        # 例外がない場合、ファイルが閉じられない（finallyがない）
+        return lines[-n:]
+
+    class DatabaseConnection:
+        def __init__(self, path):
+            import sqlite3
+            self.conn = sqlite3.connect(path)
+            self.cursor = self.conn.cursor()
+
+        def query(self, sql):
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        # close()メソッドやコンテキストマネージャーのサポートなし
+    ```
+
+    各問題について: (1)リークを特定、(2)結果を説明、(3)適切な場合にコンテキストマネージャーを使用した修正コードを提供。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: |
+          import tempfile, os
+          # Test write_temp_report closes file properly
+          path = write_temp_report("test data")
+          with open(path) as f:
+              content = f.read()
+          os.unlink(path)
+          content
+        expected: "'test data'"
+      - input: |
+          import tempfile, os
+          # Test tail_file works correctly
+          with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+              f.write('\n'.join(str(i) for i in range(20)))
+              tmp_path = f.name
+          result = tail_file(tmp_path, 3)
+          os.unlink(tmp_path)
+          result
+        expected: "['17', '18', '19']"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Fixes process_log_files to use 'with open(...) as f:' context manager"
+      - "Fixes write_temp_report to call tmp.close() or use context manager before returning"
+      - "Fixes tail_file to use 'with open(...) as f:' or add finally: f.close()"
+      - "Adds close() method to DatabaseConnection"
+      - "Adds __enter__ and __exit__ methods to DatabaseConnection for context manager support"
+      - "Explains that unclosed handles exhaust OS file descriptor limits"

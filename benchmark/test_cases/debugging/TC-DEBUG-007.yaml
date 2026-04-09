@@ -1,0 +1,153 @@
+id: TC-DEBUG-007
+category: debugging
+difficulty: medium
+tags: [sql-injection, security, vulnerability, database, debugging]
+
+prompts:
+  en: |
+    The following Python code has SQL injection vulnerabilities. Identify each vulnerability, explain how it could be exploited, and provide secure parameterized query fixes:
+
+    ```python
+    import sqlite3
+
+    def get_user_by_username(conn, username):
+        cursor = conn.cursor()
+        query = f"SELECT * FROM users WHERE username = '{username}'"  # Vulnerable
+        cursor.execute(query)
+        return cursor.fetchone()
+
+    def search_products(conn, keyword, category=None, min_price=0):
+        cursor = conn.cursor()
+        query = f"SELECT * FROM products WHERE name LIKE '%{keyword}%'"
+        if category:
+            query += f" AND category = '{category}'"
+        if min_price:
+            query += f" AND price >= {min_price}"  # Vulnerable even for numbers
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def update_user_email(conn, user_id, new_email):
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET email = '" + new_email + "' WHERE id = " + str(user_id)
+        )
+        conn.commit()
+
+    def delete_old_sessions(conn, user_id, session_token):
+        cursor = conn.cursor()
+        query = "DELETE FROM sessions WHERE user_id = %s AND token = '%s'" % (user_id, session_token)
+        cursor.execute(query)
+        conn.commit()
+    ```
+
+    For each function: (1) show a concrete exploit payload that would cause damage, (2) explain the impact, (3) provide the fixed version using parameterized queries.
+  ko: |
+    다음 Python 코드에는 SQL 인젝션 취약점이 있습니다. 각 취약점을 식별하고, 악용 방법을 설명하고, 안전한 매개변수화 쿼리 수정을 제공하세요:
+
+    ```python
+    import sqlite3
+
+    def get_user_by_username(conn, username):
+        cursor = conn.cursor()
+        query = f"SELECT * FROM users WHERE username = '{username}'"  # 취약
+        cursor.execute(query)
+        return cursor.fetchone()
+
+    def search_products(conn, keyword, category=None, min_price=0):
+        cursor = conn.cursor()
+        query = f"SELECT * FROM products WHERE name LIKE '%{keyword}%'"
+        if category:
+            query += f" AND category = '{category}'"
+        if min_price:
+            query += f" AND price >= {min_price}"  # 숫자도 취약
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def update_user_email(conn, user_id, new_email):
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET email = '" + new_email + "' WHERE id = " + str(user_id)
+        )
+        conn.commit()
+
+    def delete_old_sessions(conn, user_id, session_token):
+        cursor = conn.cursor()
+        query = "DELETE FROM sessions WHERE user_id = %s AND token = '%s'" % (user_id, session_token)
+        cursor.execute(query)
+        conn.commit()
+    ```
+
+    각 함수에 대해: (1) 피해를 입힐 수 있는 구체적인 익스플로잇 페이로드 표시, (2) 영향 설명, (3) 매개변수화 쿼리를 사용한 수정 버전 제공.
+  ja: |
+    次のPythonコードにはSQLインジェクションの脆弱性があります。各脆弱性を特定し、悪用される可能性を説明し、安全なパラメータ化クエリの修正を提供してください:
+
+    ```python
+    import sqlite3
+
+    def get_user_by_username(conn, username):
+        cursor = conn.cursor()
+        query = f"SELECT * FROM users WHERE username = '{username}'"  # 脆弱
+        cursor.execute(query)
+        return cursor.fetchone()
+
+    def search_products(conn, keyword, category=None, min_price=0):
+        cursor = conn.cursor()
+        query = f"SELECT * FROM products WHERE name LIKE '%{keyword}%'"
+        if category:
+            query += f" AND category = '{category}'"
+        if min_price:
+            query += f" AND price >= {min_price}"  # 数値でも脆弱
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    def update_user_email(conn, user_id, new_email):
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE users SET email = '" + new_email + "' WHERE id = " + str(user_id)
+        )
+        conn.commit()
+
+    def delete_old_sessions(conn, user_id, session_token):
+        cursor = conn.cursor()
+        query = "DELETE FROM sessions WHERE user_id = %s AND token = '%s'" % (user_id, session_token)
+        cursor.execute(query)
+        conn.commit()
+    ```
+
+    各関数について: (1)損害を与える具体的なエクスプロイトペイロードを示す、(2)影響を説明、(3)パラメータ化クエリを使用した修正版を提供してください。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: |
+          import sqlite3
+          conn = sqlite3.connect(":memory:")
+          conn.execute("CREATE TABLE users (id INTEGER, username TEXT, email TEXT, password TEXT)")
+          conn.execute("INSERT INTO users VALUES (1, 'admin', 'admin@test.com', 'secret')")
+          conn.execute("INSERT INTO users VALUES (2, 'alice', 'alice@test.com', 'pass')")
+          conn.commit()
+          # SQL injection attempt should not return all rows
+          result = get_user_by_username(conn, "' OR '1'='1")
+          result
+        expected: "None"
+      - input: |
+          import sqlite3
+          conn = sqlite3.connect(":memory:")
+          conn.execute("CREATE TABLE users (id INTEGER, username TEXT, email TEXT)")
+          conn.execute("INSERT INTO users VALUES (1, 'admin', 'old@test.com')")
+          conn.commit()
+          update_user_email(conn, 1, "new@test.com")
+          conn.execute("SELECT email FROM users WHERE id=1").fetchone()[0]
+        expected: "'new@test.com'"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Identifies f-string interpolation as the root cause of SQL injection"
+      - "Shows ' OR '1'='1 or similar payload for get_user_by_username"
+      - "Fixes get_user_by_username to use cursor.execute(query, (username,)) with ? placeholder"
+      - "Fixes search_products to use ? placeholders for all dynamic values including LIKE"
+      - "Fixes update_user_email to use parameterized query instead of string concatenation"
+      - "Fixes delete_old_sessions to use ? placeholders instead of % string formatting"
+      - "Explains that parameterized queries prevent injection by separating code from data"

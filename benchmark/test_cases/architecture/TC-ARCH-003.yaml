@@ -1,0 +1,84 @@
+id: TC-ARCH-003
+category: architecture
+difficulty: easy
+tags: [repository, data-access, design-pattern, abstraction, python]
+
+prompts:
+  en: |
+    Implement the Repository pattern in Python to abstract data access for a `Product` entity. Create:
+
+    1. A `Product` dataclass with: `id: str`, `name: str`, `price: float`, `category: str`, `in_stock: bool`
+
+    2. A `ProductRepository` abstract base class (using `abc.ABC`) with:
+       - `find_by_id(id: str) -> Product | None`
+       - `find_all(filters: dict = None) -> list[Product]`
+       - `save(product: Product) -> Product`
+       - `delete(id: str) -> bool`
+       - `find_by_category(category: str) -> list[Product]`
+
+    3. Two concrete implementations:
+       - `InMemoryProductRepository`: dict-backed, for testing
+       - `SQLiteProductRepository`: uses sqlite3, creates table if not exists
+
+    4. A `ProductService` that takes a `ProductRepository` (dependency injection) and implements:
+       - `create_product(name, price, category) -> Product` (generates UUID)
+       - `get_available_products(category=None) -> list[Product]` (only in_stock=True)
+       - `discontinue_product(id) -> bool` (sets in_stock=False)
+
+    Show how to swap repositories without changing service code.
+  ko: |
+    `Product` 엔티티에 대한 데이터 접근을 추상화하기 위해 Python에서 리포지토리 패턴을 구현하세요:
+
+    1. 다음을 포함하는 `Product` 데이터클래스: `id: str`, `name: str`, `price: float`, `category: str`, `in_stock: bool`
+
+    2. 다음을 포함하는 `ProductRepository` 추상 기본 클래스 (`abc.ABC` 사용):
+       - `find_by_id(id: str) -> Product | None`
+       - `find_all(filters: dict = None) -> list[Product]`
+       - `save(product: Product) -> Product`
+       - `delete(id: str) -> bool`
+       - `find_by_category(category: str) -> list[Product]`
+
+    3. 두 가지 구체적인 구현:
+       - `InMemoryProductRepository`: dict 기반, 테스트용
+       - `SQLiteProductRepository`: sqlite3 사용, 테이블이 없으면 생성
+
+    4. `ProductRepository`를 받는(의존성 주입) `ProductService`:
+       - `create_product(name, price, category) -> Product` (UUID 생성)
+       - `get_available_products(category=None) -> list[Product]` (in_stock=True만)
+       - `discontinue_product(id) -> bool` (in_stock=False로 설정)
+
+    서비스 코드를 변경하지 않고 리포지토리를 교체하는 방법을 보여주세요.
+  ja: |
+    `Product`エンティティのデータアクセスを抽象化するためにPythonでRepositoryパターンを実装してください:
+
+    1. 以下を含む`Product`データクラス: `id: str`、`name: str`、`price: float`、`category: str`、`in_stock: bool`
+
+    2. 以下を含む`ProductRepository`抽象基底クラス（`abc.ABC`を使用）:
+       - `find_by_id(id: str) -> Product | None`
+       - `find_all(filters: dict = None) -> list[Product]`
+       - `save(product: Product) -> Product`
+       - `delete(id: str) -> bool`
+       - `find_by_category(category: str) -> list[Product]`
+
+    3. 2つの具体的な実装:
+       - `InMemoryProductRepository`: dictバックド、テスト用
+       - `SQLiteProductRepository`: sqlite3を使用、テーブルが存在しない場合は作成
+
+    4. `ProductRepository`を受け取る（依存性注入）`ProductService`:
+       - `create_product(name, price, category) -> Product`（UUIDを生成）
+       - `get_available_products(category=None) -> list[Product]`（in_stock=Trueのみ）
+       - `discontinue_product(id) -> bool`（in_stock=Falseに設定）
+
+    サービスコードを変更せずにリポジトリを交換する方法を示してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Product is a dataclass with all required fields"
+    - "ProductRepository is an ABC with all five abstract methods"
+    - "InMemoryProductRepository stores products in a dict keyed by id"
+    - "SQLiteProductRepository creates table in __init__ if not exists"
+    - "ProductService receives repository via __init__ (dependency injection)"
+    - "create_product generates a UUID for the id"
+    - "get_available_products filters by in_stock=True and optionally by category"
+    - "Demonstrates swapping InMemory for SQLite repository in ProductService without code changes"

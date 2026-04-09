@@ -1,0 +1,44 @@
+id: TC-CODE-007
+category: coding
+difficulty: medium
+tags: [binary-tree, bfs, traversal, queues, trees]
+
+prompts:
+  en: |
+    Define a `TreeNode` class with `val`, `left`, and `right` attributes. Write a function `level_order(root)` that returns the level-order (breadth-first) traversal of a binary tree as a list of lists, where each inner list contains the values at that level.
+
+    Also write helper functions:
+    - `array_to_tree(arr)`: builds a binary tree from a level-order array representation (None for missing nodes)
+    - `tree_to_array(root)`: returns the level-order array representation
+
+    Return an empty list `[]` for a null/None root.
+  ko: |
+    `val`, `left`, `right` 속성을 가진 `TreeNode` 클래스를 정의하세요. 이진 트리의 레벨 순서(너비 우선) 순회를 각 레벨의 값을 담은 리스트의 리스트로 반환하는 함수 `level_order(root)`를 작성하세요.
+
+    헬퍼 함수도 작성하세요:
+    - `array_to_tree(arr)`: 레벨 순서 배열 표현(없는 노드는 None)으로 이진 트리 구성
+    - `tree_to_array(root)`: 레벨 순서 배열 표현 반환
+
+    null/None 루트의 경우 빈 리스트 `[]`를 반환하세요.
+  ja: |
+    `val`、`left`、`right`属性を持つ`TreeNode`クラスを定義してください。二分木のレベル順（幅優先）探索を、各レベルの値を含むリストのリストとして返す関数`level_order(root)`を実装してください。
+
+    以下のヘルパー関数も実装してください:
+    - `array_to_tree(arr)`: レベル順配列表現（存在しないノードはNone）から二分木を構築する
+    - `tree_to_array(root)`: レベル順配列表現を返す
+
+    null/Noneのルートに対しては空のリスト`[]`を返してください。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: "level_order(array_to_tree([3,9,20,None,None,15,7]))"
+      expected: "[[3], [9, 20], [15, 7]]"
+    - input: "level_order(array_to_tree([1]))"
+      expected: "[[1]]"
+    - input: "level_order(None)"
+      expected: "[]"
+    - input: "level_order(array_to_tree([1,2,3,4,5]))"
+      expected: "[[1], [2, 3], [4, 5]]"
+  timeout_seconds: 30

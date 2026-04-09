@@ -1,0 +1,158 @@
+id: TC-DEBUG-008
+category: debugging
+difficulty: hard
+tags: [circular-import, importerror, modules, python, architecture]
+
+prompts:
+  en: |
+    The following Python package has a circular import that causes an ImportError at runtime. Analyze the import chain, explain why it fails, and provide a structural fix:
+
+    ```
+    myapp/
+    ├── __init__.py
+    ├── models.py
+    ├── services.py
+    ├── utils.py
+    └── api.py
+    ```
+
+    ```python
+    # models.py
+    from myapp.services import UserService  # imports services
+    class User:
+        def save(self):
+            UserService.validate(self)
+
+    # services.py
+    from myapp.models import User  # imports models -> circular!
+    class UserService:
+        @staticmethod
+        def validate(user: User):
+            if not user.email:
+                raise ValueError("Email required")
+        @staticmethod
+        def create_user(email: str) -> User:
+            return User(email=email)
+
+    # utils.py
+    from myapp.models import User
+    from myapp.services import UserService
+    def get_admin() -> User:
+        return UserService.create_user("admin@example.com")
+
+    # api.py
+    from myapp.utils import get_admin
+    from myapp.models import User
+    ```
+
+    Provide THREE different solutions:
+    1. Dependency inversion (introduce an interface/protocol)
+    2. Lazy imports (import inside function body)
+    3. Module restructuring (split into smaller modules)
+
+    Explain the trade-offs of each approach.
+  ko: |
+    다음 Python 패키지에는 런타임 시 ImportError를 유발하는 순환 임포트가 있습니다. 임포트 체인을 분석하고, 실패 이유를 설명하고, 구조적 수정 방법을 제공하세요:
+
+    ```
+    myapp/
+    ├── __init__.py
+    ├── models.py
+    ├── services.py
+    ├── utils.py
+    └── api.py
+    ```
+
+    ```python
+    # models.py
+    from myapp.services import UserService  # services 임포트
+    class User:
+        def save(self):
+            UserService.validate(self)
+
+    # services.py
+    from myapp.models import User  # models 임포트 -> 순환!
+    class UserService:
+        @staticmethod
+        def validate(user: User):
+            if not user.email:
+                raise ValueError("Email required")
+        @staticmethod
+        def create_user(email: str) -> User:
+            return User(email=email)
+
+    # utils.py
+    from myapp.models import User
+    from myapp.services import UserService
+    def get_admin() -> User:
+        return UserService.create_user("admin@example.com")
+
+    # api.py
+    from myapp.utils import get_admin
+    from myapp.models import User
+    ```
+
+    세 가지 다른 해결책을 제공하세요:
+    1. 의존성 역전 (인터페이스/프로토콜 도입)
+    2. 지연 임포트 (함수 본문 내에서 임포트)
+    3. 모듈 재구조화 (더 작은 모듈로 분리)
+
+    각 접근 방식의 트레이드오프를 설명하세요.
+  ja: |
+    次のPythonパッケージには、実行時にImportErrorを引き起こす循環インポートがあります。インポートチェーンを分析し、失敗する理由を説明し、構造的な修正を提供してください:
+
+    ```
+    myapp/
+    ├── __init__.py
+    ├── models.py
+    ├── services.py
+    ├── utils.py
+    └── api.py
+    ```
+
+    ```python
+    # models.py
+    from myapp.services import UserService  # servicesをインポート
+    class User:
+        def save(self):
+            UserService.validate(self)
+
+    # services.py
+    from myapp.models import User  # modelsをインポート -> 循環！
+    class UserService:
+        @staticmethod
+        def validate(user: User):
+            if not user.email:
+                raise ValueError("Email required")
+        @staticmethod
+        def create_user(email: str) -> User:
+            return User(email=email)
+
+    # utils.py
+    from myapp.models import User
+    from myapp.services import UserService
+    def get_admin() -> User:
+        return UserService.create_user("admin@example.com")
+
+    # api.py
+    from myapp.utils import get_admin
+    from myapp.models import User
+    ```
+
+    3つの異なる解決策を提供してください:
+    1. 依存性逆転（インターフェース/プロトコルの導入）
+    2. 遅延インポート（関数本体内でインポート）
+    3. モジュールの再構造化（より小さなモジュールへの分割）
+
+    各アプローチのトレードオフを説明してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Correctly identifies the circular chain: models -> services -> models"
+    - "Explains that Python raises ImportError because the module is not yet fully initialized when the circular import occurs"
+    - "Solution 1 uses typing.Protocol or ABC to define an interface that models.py depends on instead of services.py"
+    - "Solution 2 moves 'from myapp.services import UserService' inside the save() method body"
+    - "Solution 3 extracts base types (e.g., a separate base_models.py) to break the cycle"
+    - "Explains trade-offs: Protocol adds abstraction overhead; lazy imports hide dependencies; restructuring requires refactoring"
+    - "At least one solution is fully correct Python code that resolves the circular import"

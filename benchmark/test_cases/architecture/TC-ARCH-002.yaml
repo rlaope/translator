@@ -1,0 +1,68 @@
+id: TC-ARCH-002
+category: architecture
+difficulty: easy
+tags: [observer, event-system, design-pattern, behavioral, python]
+
+prompts:
+  en: |
+    Implement the Observer (Publish-Subscribe) pattern in Python to build a flexible event system. Create:
+
+    1. An `EventEmitter` class with:
+       - `on(event: str, handler: Callable)`: Register a handler for an event
+       - `off(event: str, handler: Callable)`: Unregister a handler
+       - `emit(event: str, *args, **kwargs)`: Call all handlers for an event
+       - `once(event: str, handler: Callable)`: Register a handler that fires only once
+
+    2. A typed `TypedEventEmitter` using generics/TypeVar so handlers are type-checked per event.
+
+    3. A real-world example: a `UserService` that emits events:
+       - `user.created` with payload `User`
+       - `user.deleted` with payload `user_id: str`
+       - `user.login` with payload `User, ip_address: str`
+
+    Show multiple subscribers for the same event, demonstrate `once()`, and show how to build an audit log subscriber that records all `user.*` events.
+  ko: |
+    유연한 이벤트 시스템을 구축하기 위해 Python에서 옵저버(발행-구독) 패턴을 구현하세요:
+
+    1. 다음을 포함하는 `EventEmitter` 클래스:
+       - `on(event: str, handler: Callable)`: 이벤트에 대한 핸들러 등록
+       - `off(event: str, handler: Callable)`: 핸들러 등록 취소
+       - `emit(event: str, *args, **kwargs)`: 이벤트의 모든 핸들러 호출
+       - `once(event: str, handler: Callable)`: 한 번만 실행되는 핸들러 등록
+
+    2. 핸들러가 이벤트별로 타입 검사되도록 제네릭/TypeVar를 사용하는 타입화된 `TypedEventEmitter`.
+
+    3. 실제 예시: 다음 이벤트를 발생시키는 `UserService`:
+       - `user.created` (페이로드: `User`)
+       - `user.deleted` (페이로드: `user_id: str`)
+       - `user.login` (페이로드: `User, ip_address: str`)
+
+    동일한 이벤트에 대한 여러 구독자를 표시하고, `once()`를 시연하고, 모든 `user.*` 이벤트를 기록하는 감사 로그 구독자를 구축하는 방법을 보여주세요.
+  ja: |
+    柔軟なイベントシステムを構築するためにPythonでObserver（パブリッシュ-サブスクライブ）パターンを実装してください:
+
+    1. 以下を含む`EventEmitter`クラス:
+       - `on(event: str, handler: Callable)`: イベントのハンドラーを登録
+       - `off(event: str, handler: Callable)`: ハンドラーの登録を解除
+       - `emit(event: str, *args, **kwargs)`: イベントのすべてのハンドラーを呼び出す
+       - `once(event: str, handler: Callable)`: 一度だけ実行されるハンドラーを登録
+
+    2. ハンドラーがイベントごとに型チェックされるようにジェネリクス/TypeVarを使用した型付き`TypedEventEmitter`。
+
+    3. 実際の例: 以下のイベントを発行する`UserService`:
+       - `user.created`（ペイロード: `User`）
+       - `user.deleted`（ペイロード: `user_id: str`）
+       - `user.login`（ペイロード: `User, ip_address: str`）
+
+    同じイベントの複数のサブスクライバーを示し、`once()`をデモし、すべての`user.*`イベントを記録する監査ログサブスクライバーの構築方法を示してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "EventEmitter stores handlers in a dict mapping event name to list of callables"
+    - "on() appends handler, off() removes handler safely (no error if not present)"
+    - "emit() calls all handlers with *args and **kwargs"
+    - "once() wraps handler to call off() after first invocation"
+    - "UserService inherits or composes EventEmitter and calls emit() at appropriate points"
+    - "Audit log subscriber uses wildcard or prefix matching (user.*) or is registered for each event"
+    - "Demonstrates multiple subscribers receiving the same event"

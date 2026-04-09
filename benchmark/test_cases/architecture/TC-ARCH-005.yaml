@@ -1,0 +1,112 @@
+id: TC-ARCH-005
+category: architecture
+difficulty: medium
+tags: [circuit-breaker, microservices, resilience, fault-tolerance, python]
+
+prompts:
+  en: |
+    Implement a Circuit Breaker pattern in Python for microservice resilience. Create a `CircuitBreaker` class with three states:
+
+    - **CLOSED** (normal): Requests pass through. Failures are counted.
+    - **OPEN** (tripped): Requests fail immediately without calling the service. After `reset_timeout` seconds, transitions to HALF_OPEN.
+    - **HALF_OPEN** (testing): One request is allowed through. If it succeeds, transitions to CLOSED. If it fails, transitions back to OPEN.
+
+    ```python
+    class CircuitBreaker:
+        def __init__(self,
+                     failure_threshold: int = 5,
+                     success_threshold: int = 2,
+                     reset_timeout: float = 60.0,
+                     expected_exceptions: tuple = (Exception,)): ...
+
+        def call(self, func: Callable, *args, **kwargs) -> Any: ...
+
+        # Decorator interface
+        def __call__(self, func: Callable) -> Callable: ...
+
+        @property
+        def state(self) -> str: ...  # "CLOSED", "OPEN", "HALF_OPEN"
+
+        def get_stats(self) -> dict: ...  # failure_count, success_count, state, last_failure_time
+    ```
+
+    Include:
+    - Thread-safe state transitions using locks
+    - `CircuitBreakerOpenError` exception with time remaining until reset
+    - A `CircuitBreakerRegistry` to manage multiple circuit breakers by name
+    - Example usage wrapping an HTTP service call
+  ko: |
+    마이크로서비스 복원력을 위해 Python에서 서킷 브레이커 패턴을 구현하세요. 세 가지 상태를 가진 `CircuitBreaker` 클래스를 만드세요:
+
+    - **CLOSED** (정상): 요청이 통과. 실패를 카운트.
+    - **OPEN** (차단됨): 서비스 호출 없이 요청이 즉시 실패. `reset_timeout`초 후 HALF_OPEN으로 전환.
+    - **HALF_OPEN** (테스트 중): 하나의 요청이 통과 허용. 성공하면 CLOSED로 전환. 실패하면 OPEN으로 전환.
+
+    ```python
+    class CircuitBreaker:
+        def __init__(self,
+                     failure_threshold: int = 5,
+                     success_threshold: int = 2,
+                     reset_timeout: float = 60.0,
+                     expected_exceptions: tuple = (Exception,)): ...
+
+        def call(self, func: Callable, *args, **kwargs) -> Any: ...
+
+        # 데코레이터 인터페이스
+        def __call__(self, func: Callable) -> Callable: ...
+
+        @property
+        def state(self) -> str: ...  # "CLOSED", "OPEN", "HALF_OPEN"
+
+        def get_stats(self) -> dict: ...  # failure_count, success_count, state, last_failure_time
+    ```
+
+    포함 사항:
+    - 잠금을 사용한 스레드 안전한 상태 전환
+    - 재설정까지 남은 시간이 포함된 `CircuitBreakerOpenError` 예외
+    - 이름으로 여러 서킷 브레이커를 관리하는 `CircuitBreakerRegistry`
+    - HTTP 서비스 호출을 래핑하는 예제 사용법
+  ja: |
+    マイクロサービスの復元力のためにPythonでCircuit Breakerパターンを実装してください。3つの状態を持つ`CircuitBreaker`クラスを作成してください:
+
+    - **CLOSED**（正常）: リクエストが通過。失敗をカウント。
+    - **OPEN**（遮断）: サービスを呼び出さずにリクエストが即座に失敗。`reset_timeout`秒後にHALF_OPENに遷移。
+    - **HALF_OPEN**（テスト中）: 1つのリクエストの通過を許可。成功するとCLOSEDに遷移。失敗するとOPENに遷移。
+
+    ```python
+    class CircuitBreaker:
+        def __init__(self,
+                     failure_threshold: int = 5,
+                     success_threshold: int = 2,
+                     reset_timeout: float = 60.0,
+                     expected_exceptions: tuple = (Exception,)): ...
+
+        def call(self, func: Callable, *args, **kwargs) -> Any: ...
+
+        # デコレーターインターフェース
+        def __call__(self, func: Callable) -> Callable: ...
+
+        @property
+        def state(self) -> str: ...  # "CLOSED", "OPEN", "HALF_OPEN"
+
+        def get_stats(self) -> dict: ...  # failure_count, success_count, state, last_failure_time
+    ```
+
+    含める内容:
+    - ロックを使用したスレッドセーフな状態遷移
+    - リセットまでの残り時間を含む`CircuitBreakerOpenError`例外
+    - 名前で複数のサーキットブレーカーを管理する`CircuitBreakerRegistry`
+    - HTTPサービス呼び出しをラップするサンプル使用法
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Implements three states: CLOSED, OPEN, HALF_OPEN using an Enum or constants"
+    - "OPEN state raises CircuitBreakerOpenError without calling the function"
+    - "Transitions OPEN -> HALF_OPEN after reset_timeout seconds (uses time.monotonic())"
+    - "Transitions HALF_OPEN -> CLOSED after success_threshold successes"
+    - "Transitions HALF_OPEN -> OPEN on failure"
+    - "Uses threading.Lock for thread-safe state transitions"
+    - "CircuitBreakerOpenError includes time_remaining until reset"
+    - "Supports both call() method and decorator (__call__) usage"
+    - "CircuitBreakerRegistry stores breakers by name and provides get_or_create()"

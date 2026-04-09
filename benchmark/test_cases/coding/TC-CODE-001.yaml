@@ -1,0 +1,44 @@
+id: TC-CODE-001
+category: coding
+difficulty: easy
+tags: [loops, conditionals, fizzbuzz, customization]
+
+prompts:
+  en: |
+    Write a Python function `fizzbuzz(n, divisor1, divisor2, word1, word2)` that returns a list of strings for numbers 1 through n (inclusive). For each number:
+    - If divisible by both divisor1 and divisor2, append word1 + word2
+    - If divisible only by divisor1, append word1
+    - If divisible only by divisor2, append word2
+    - Otherwise, append the string representation of the number
+
+    Example: fizzbuzz(15, 3, 5, "Fizz", "Buzz") should return the classic FizzBuzz sequence.
+  ko: |
+    Python 함수 `fizzbuzz(n, divisor1, divisor2, word1, word2)`를 작성하세요. 이 함수는 1부터 n까지의 숫자에 대한 문자열 리스트를 반환합니다. 각 숫자에 대해:
+    - divisor1과 divisor2 모두로 나누어 떨어지면 word1 + word2를 추가
+    - divisor1로만 나누어 떨어지면 word1을 추가
+    - divisor2로만 나누어 떨어지면 word2를 추가
+    - 그 외의 경우 숫자를 문자열로 변환하여 추가
+
+    예시: fizzbuzz(15, 3, 5, "Fizz", "Buzz")는 클래식 FizzBuzz 수열을 반환해야 합니다.
+  ja: |
+    Python関数 `fizzbuzz(n, divisor1, divisor2, word1, word2)` を実装してください。この関数は1からn（含む）までの各数値に対して文字列のリストを返します。各数値について:
+    - divisor1とdivisor2の両方で割り切れる場合、word1 + word2を追加
+    - divisor1のみで割り切れる場合、word1を追加
+    - divisor2のみで割り切れる場合、word2を追加
+    - それ以外の場合、数値の文字列表現を追加
+
+    例: fizzbuzz(15, 3, 5, "Fizz", "Buzz") はクラシックなFizzBuzzシーケンスを返す必要があります。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: "fizzbuzz(15, 3, 5, 'Fizz', 'Buzz')"
+      expected: "['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz', '11', 'Fizz', '13', '14', 'FizzBuzz']"
+    - input: "fizzbuzz(10, 2, 3, 'Foo', 'Bar')"
+      expected: "['1', 'Foo', 'Bar', 'Foo', '5', 'FooBar', '7', 'Foo', 'Bar', 'Foo']"
+    - input: "fizzbuzz(5, 7, 11, 'X', 'Y')"
+      expected: "['1', '2', '3', '4', '5']"
+    - input: "fizzbuzz(1, 1, 1, 'A', 'B')"
+      expected: "['AB']"
+  timeout_seconds: 30

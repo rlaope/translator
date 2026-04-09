@@ -1,0 +1,138 @@
+id: TC-DEBUG-009
+category: debugging
+difficulty: hard
+tags: [floating-point, precision, financial, decimal, debugging]
+
+prompts:
+  en: |
+    The following Python financial calculation code has floating-point precision errors that cause incorrect results in monetary calculations. Find all bugs and fix them:
+
+    ```python
+    def calculate_tax(amount, tax_rate):
+        """Calculate tax amount rounded to 2 decimal places."""
+        return round(amount * tax_rate, 2)
+
+    def split_bill(total, num_people):
+        """Split a bill evenly among people, return per-person amount."""
+        return total / num_people
+
+    def apply_discount(price, discount_percent):
+        """Apply a percentage discount to a price."""
+        discount = price * (discount_percent / 100)
+        return price - discount
+
+    def calculate_compound_interest(principal, annual_rate, years, compounds_per_year=12):
+        """Calculate final amount with compound interest."""
+        rate = annual_rate / 100
+        return principal * (1 + rate / compounds_per_year) ** (compounds_per_year * years)
+
+    def sum_line_items(items):
+        """Sum a list of (price, quantity) tuples."""
+        total = 0.0
+        for price, qty in items:
+            total += price * qty
+        return total
+
+    # Demonstrate the bugs:
+    print(0.1 + 0.2 == 0.3)        # False!
+    print(calculate_tax(19.99, 0.08))  # May be 1.5992000000000002 before round, but accumulated errors exist
+    print(split_bill(10.00, 3))     # 3.3333333333333335
+    ```
+
+    Fix all functions to use Python's `decimal.Decimal` for exact decimal arithmetic. Also explain when to use `Decimal` vs `float` and the performance trade-off.
+  ko: |
+    다음 Python 금융 계산 코드에는 통화 계산에서 잘못된 결과를 유발하는 부동 소수점 정밀도 오류가 있습니다. 모든 버그를 찾아 수정하세요:
+
+    ```python
+    def calculate_tax(amount, tax_rate):
+        """세금 금액을 소수점 2자리로 반올림하여 계산합니다."""
+        return round(amount * tax_rate, 2)
+
+    def split_bill(total, num_people):
+        """청구서를 사람들에게 균등 분할하고, 1인당 금액을 반환합니다."""
+        return total / num_people
+
+    def apply_discount(price, discount_percent):
+        """가격에 할인율을 적용합니다."""
+        discount = price * (discount_percent / 100)
+        return price - discount
+
+    def calculate_compound_interest(principal, annual_rate, years, compounds_per_year=12):
+        """복리 이자로 최종 금액을 계산합니다."""
+        rate = annual_rate / 100
+        return principal * (1 + rate / compounds_per_year) ** (compounds_per_year * years)
+
+    def sum_line_items(items):
+        """(가격, 수량) 튜플 목록을 합산합니다."""
+        total = 0.0
+        for price, qty in items:
+            total += price * qty
+        return total
+
+    # 버그 시연:
+    print(0.1 + 0.2 == 0.3)        # False!
+    print(calculate_tax(19.99, 0.08))
+    print(split_bill(10.00, 3))     # 3.3333333333333335
+    ```
+
+    Python의 `decimal.Decimal`을 사용하여 정확한 십진수 산술을 위해 모든 함수를 수정하세요. `Decimal`과 `float`를 각각 언제 사용해야 하는지와 성능 트레이드오프도 설명하세요.
+  ja: |
+    次のPython金融計算コードには、通貨計算で誤った結果を引き起こす浮動小数点精度エラーがあります。すべてのバグを見つけて修正してください:
+
+    ```python
+    def calculate_tax(amount, tax_rate):
+        """税額を小数点2桁に丸めて計算します。"""
+        return round(amount * tax_rate, 2)
+
+    def split_bill(total, num_people):
+        """請求書を均等に分割し、1人あたりの金額を返します。"""
+        return total / num_people
+
+    def apply_discount(price, discount_percent):
+        """価格に割引率を適用します。"""
+        discount = price * (discount_percent / 100)
+        return price - discount
+
+    def calculate_compound_interest(principal, annual_rate, years, compounds_per_year=12):
+        """複利計算で最終金額を計算します。"""
+        rate = annual_rate / 100
+        return principal * (1 + rate / compounds_per_year) ** (compounds_per_year * years)
+
+    def sum_line_items(items):
+        """(価格, 数量)タプルのリストを合計します。"""
+        total = 0.0
+        for price, qty in items:
+            total += price * qty
+        return total
+
+    # バグのデモ:
+    print(0.1 + 0.2 == 0.3)        # False!
+    print(calculate_tax(19.99, 0.08))
+    print(split_bill(10.00, 3))     # 3.3333333333333335
+    ```
+
+    Pythonの`decimal.Decimal`を使用して正確な十進数算術のためにすべての関数を修正してください。`Decimal`と`float`をそれぞれいつ使用するかと、パフォーマンスのトレードオフについても説明してください。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: "str(calculate_tax('19.99', '0.08'))"
+        expected: "'1.60'"
+      - input: "str(split_bill('10.00', 3))"
+        expected: "'3.33'"
+      - input: "str(apply_discount('100.00', '10'))"
+        expected: "'90.00'"
+      - input: "str(sum_line_items([('9.99', 3), ('4.99', 2)]))"
+        expected: "'39.95'"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Uses from decimal import Decimal, ROUND_HALF_UP (or similar rounding mode)"
+      - "Converts string inputs to Decimal (not float) to avoid precision loss at input boundary"
+      - "calculate_tax uses Decimal arithmetic and quantize for rounding"
+      - "split_bill uses Decimal division"
+      - "sum_line_items initializes total to Decimal('0') not 0.0"
+      - "Explains that float uses binary (base-2) representation causing inexact decimal fractions"
+      - "Explains Decimal is slower than float but necessary for financial calculations"

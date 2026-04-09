@@ -1,0 +1,114 @@
+id: TC-CODE-008
+category: coding
+difficulty: hard
+tags: [async, rate-limiting, token-bucket, concurrency, asyncio]
+
+prompts:
+  en: |
+    Implement an async token bucket rate limiter in Python using asyncio. Create a class `AsyncRateLimiter` with the following interface:
+
+    ```python
+    class AsyncRateLimiter:
+        def __init__(self, rate: float, capacity: float):
+            # rate: tokens added per second
+            # capacity: maximum tokens in the bucket
+            ...
+
+        async def acquire(self, tokens: float = 1.0) -> float:
+            # Waits until tokens are available, returns wait time in seconds
+            ...
+
+        async def __aenter__(self): ...
+        async def __aexit__(self, *args): ...
+    ```
+
+    Requirements:
+    - Thread-safe for concurrent async tasks
+    - `acquire` should sleep only as long as necessary
+    - Support context manager protocol for single-token acquisition
+    - Tokens that exceed capacity are discarded (no accumulation beyond cap)
+    - Use monotonic time to avoid clock skew issues
+  ko: |
+    asyncio를 사용하여 Python에서 비동기 토큰 버킷 속도 제한기를 구현하세요. 다음 인터페이스를 가진 `AsyncRateLimiter` 클래스를 만드세요:
+
+    ```python
+    class AsyncRateLimiter:
+        def __init__(self, rate: float, capacity: float):
+            # rate: 초당 추가되는 토큰 수
+            # capacity: 버킷의 최대 토큰 수
+            ...
+
+        async def acquire(self, tokens: float = 1.0) -> float:
+            # 토큰이 사용 가능할 때까지 대기하고, 대기 시간(초)을 반환
+            ...
+
+        async def __aenter__(self): ...
+        async def __aexit__(self, *args): ...
+    ```
+
+    요구사항:
+    - 동시 비동기 태스크에 대해 스레드 안전
+    - `acquire`는 필요한 만큼만 슬립해야 함
+    - 단일 토큰 획득을 위한 컨텍스트 매니저 프로토콜 지원
+    - 용량을 초과하는 토큰은 폐기됨 (한도를 초과한 누적 없음)
+    - 클럭 스큐 문제 방지를 위해 모노토닉 시간 사용
+  ja: |
+    asyncioを使用してPythonで非同期トークンバケットレートリミッターを実装してください。以下のインターフェースを持つ`AsyncRateLimiter`クラスを作成してください:
+
+    ```python
+    class AsyncRateLimiter:
+        def __init__(self, rate: float, capacity: float):
+            # rate: 毎秒追加されるトークン数
+            # capacity: バケットの最大トークン数
+            ...
+
+        async def acquire(self, tokens: float = 1.0) -> float:
+            # トークンが利用可能になるまで待機し、待機時間（秒）を返す
+            ...
+
+        async def __aenter__(self): ...
+        async def __aexit__(self, *args): ...
+    ```
+
+    要件:
+    - 並行非同期タスクに対してスレッドセーフ
+    - `acquire`は必要な時間だけスリープする
+    - シングルトークン取得のコンテキストマネージャープロトコルのサポート
+    - 容量を超えるトークンは破棄される（上限を超えた蓄積なし）
+    - クロックスキュー問題を避けるためにモノトニック時間を使用
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: |
+        import asyncio, time
+        async def test_basic():
+            limiter = AsyncRateLimiter(rate=10, capacity=10)
+            start = time.monotonic()
+            await limiter.acquire(10)
+            elapsed = time.monotonic() - start
+            return elapsed < 0.1  # should be immediate since bucket starts full
+        asyncio.run(test_basic())
+      expected: "True"
+    - input: |
+        import asyncio, time
+        async def test_wait():
+            limiter = AsyncRateLimiter(rate=10, capacity=10)
+            await limiter.acquire(10)  # drain bucket
+            start = time.monotonic()
+            await limiter.acquire(5)   # need to wait ~0.5s for 5 tokens at rate=10
+            elapsed = time.monotonic() - start
+            return 0.4 <= elapsed <= 0.8
+        asyncio.run(test_wait())
+      expected: "True"
+    - input: |
+        import asyncio
+        async def test_context_manager():
+            limiter = AsyncRateLimiter(rate=100, capacity=100)
+            async with limiter:
+                pass
+            return True
+        asyncio.run(test_context_manager())
+      expected: "True"
+  timeout_seconds: 30

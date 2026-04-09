@@ -1,0 +1,46 @@
+id: TC-CODE-003
+category: coding
+difficulty: easy
+tags: [strings, unicode, palindrome, normalization]
+
+prompts:
+  en: |
+    Write a Python function `is_palindrome(s)` that checks whether a string is a palindrome. The function must be Unicode-aware and should:
+    - Normalize the string using Unicode NFC normalization
+    - Ignore case (case-fold for full Unicode support)
+    - Ignore all whitespace and punctuation characters
+    - Return True if the cleaned string reads the same forwards and backwards, False otherwise
+
+    Handle strings containing characters from multiple languages (e.g., Arabic, Japanese, Korean).
+  ko: |
+    문자열이 팰린드롬인지 확인하는 Python 함수 `is_palindrome(s)`를 작성하세요. 이 함수는 유니코드를 인식해야 하며 다음을 수행해야 합니다:
+    - 유니코드 NFC 정규화를 사용하여 문자열 정규화
+    - 대소문자 무시 (완전한 유니코드 지원을 위한 케이스 폴딩)
+    - 모든 공백 및 구두점 문자 무시
+    - 정리된 문자열이 앞뒤로 동일하게 읽히면 True, 그렇지 않으면 False 반환
+
+    여러 언어(예: 아랍어, 일본어, 한국어)의 문자가 포함된 문자열도 처리하세요.
+  ja: |
+    文字列が回文かどうかを確認するPython関数`is_palindrome(s)`を実装してください。この関数はUnicodeを考慮する必要があり、以下を行う必要があります:
+    - Unicode NFC正規化を使用して文字列を正規化
+    - 大文字小文字を無視（完全なUnicodeサポートのためのケースフォールディング）
+    - すべての空白と句読点文字を無視
+    - 整理された文字列が前後で同じに読める場合はTrue、そうでない場合はFalseを返す
+
+    複数の言語（例: アラビア語、日本語、韓国語）の文字を含む文字列も処理してください。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: "is_palindrome('A man, a plan, a canal: Panama')"
+      expected: "True"
+    - input: "is_palindrome('race a car')"
+      expected: "False"
+    - input: "is_palindrome('Was it a car or a cat I saw?')"
+      expected: "True"
+    - input: "is_palindrome('アイウエアイウエ')"
+      expected: "False"
+    - input: "is_palindrome('アイウイア')"
+      expected: "True"
+  timeout_seconds: 30

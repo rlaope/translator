@@ -1,0 +1,99 @@
+id: TC-ARCH-007
+category: architecture
+difficulty: medium
+tags: [api-gateway, rate-limiting, routing, middleware, python]
+
+prompts:
+  en: |
+    Design an API Gateway in Python using FastAPI that sits in front of multiple microservices. Implement:
+
+    **Core Gateway Features:**
+    1. **Route Registry**: Configure service routes mapping URL prefixes to backend service URLs
+       ```python
+       routes = {
+           "/users": "http://user-service:8001",
+           "/orders": "http://order-service:8002",
+           "/products": "http://product-service:8003",
+       }
+       ```
+
+    2. **Request Proxying**: Forward requests (with headers, query params, body) to the appropriate backend service using `httpx.AsyncClient`
+
+    3. **Rate Limiting** per API key:
+       - Sliding window algorithm: 100 requests per minute per key
+       - Return `HTTP 429` with `Retry-After` header when limit exceeded
+       - Store counters in an in-memory dict (or Redis for production note)
+
+    4. **Authentication Middleware**: Validate `X-API-Key` header against a key store. Return `HTTP 401` if missing or invalid.
+
+    5. **Request/Response Logging**: Log method, path, upstream URL, status code, and latency for every request.
+
+    6. **Health Check**: `GET /health` returns gateway status and connectivity to each upstream service.
+
+    Show configuration, middleware ordering, and error handling.
+  ko: |
+    여러 마이크로서비스 앞에 위치하는 FastAPI를 사용하여 Python에서 API 게이트웨이를 설계하세요:
+
+    **핵심 게이트웨이 기능:**
+    1. **라우트 레지스트리**: URL 접두사를 백엔드 서비스 URL에 매핑하는 서비스 라우트 구성
+       ```python
+       routes = {
+           "/users": "http://user-service:8001",
+           "/orders": "http://order-service:8002",
+           "/products": "http://product-service:8003",
+       }
+       ```
+
+    2. **요청 프록시**: `httpx.AsyncClient`를 사용하여 적절한 백엔드 서비스로 요청(헤더, 쿼리 파라미터, 본문 포함)을 전달
+
+    3. **API 키별 속도 제한**:
+       - 슬라이딩 윈도우 알고리즘: 키당 분당 100개 요청
+       - 제한 초과 시 `Retry-After` 헤더와 함께 `HTTP 429` 반환
+       - 인메모리 dict에 카운터 저장 (프로덕션용 Redis 참고)
+
+    4. **인증 미들웨어**: 키 스토어에 대한 `X-API-Key` 헤더 검증. 누락 또는 유효하지 않으면 `HTTP 401` 반환.
+
+    5. **요청/응답 로깅**: 모든 요청에 대해 메서드, 경로, 업스트림 URL, 상태 코드, 지연 시간 로깅.
+
+    6. **헬스 체크**: `GET /health`는 게이트웨이 상태와 각 업스트림 서비스 연결성을 반환.
+
+    구성, 미들웨어 순서, 오류 처리를 보여주세요.
+  ja: |
+    複数のマイクロサービスの前に位置するFastAPIを使用してPythonでAPIゲートウェイを設計してください:
+
+    **コアゲートウェイ機能:**
+    1. **ルートレジストリ**: URLプレフィックスをバックエンドサービスURLにマッピングするサービスルートの設定
+       ```python
+       routes = {
+           "/users": "http://user-service:8001",
+           "/orders": "http://order-service:8002",
+           "/products": "http://product-service:8003",
+       }
+       ```
+
+    2. **リクエストプロキシ**: `httpx.AsyncClient`を使用して適切なバックエンドサービスにリクエスト（ヘッダー、クエリパラメータ、ボディを含む）を転送
+
+    3. **APIキーごとのレート制限**:
+       - スライディングウィンドウアルゴリズム: キーごとに1分あたり100リクエスト
+       - 制限超過時に`Retry-After`ヘッダーとともに`HTTP 429`を返す
+       - インメモリdictにカウンターを保存（本番環境向けRedisの注記）
+
+    4. **認証ミドルウェア**: キーストアに対して`X-API-Key`ヘッダーを検証。欠落または無効な場合は`HTTP 401`を返す。
+
+    5. **リクエスト/レスポンスログ**: すべてのリクエストのメソッド、パス、アップストリームURL、ステータスコード、レイテンシをログ。
+
+    6. **ヘルスチェック**: `GET /health`はゲートウェイのステータスと各アップストリームサービスへの接続性を返す。
+
+    設定、ミドルウェアの順序、エラー処理を示してください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines a route registry mapping URL prefixes to backend URLs"
+    - "Proxy handler uses httpx.AsyncClient to forward requests with headers, params, and body"
+    - "Rate limiter uses sliding window and returns HTTP 429 with Retry-After header"
+    - "Authentication middleware validates X-API-Key header before proxying"
+    - "Request logging middleware records method, path, upstream, status code, and latency"
+    - "GET /health endpoint checks connectivity to each upstream service"
+    - "Middleware ordering is correct: auth -> rate limit -> logging -> proxy"
+    - "httpx.AsyncClient is created once (lifespan) and reused, not per-request"

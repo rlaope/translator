@@ -1,0 +1,75 @@
+id: TC-API-005
+category: api_usage
+difficulty: medium
+tags: [websocket, asyncio, real-time, fastapi, concurrency]
+
+prompts:
+  en: |
+    Build a WebSocket chat server using FastAPI and asyncio that supports multiple concurrent clients. Implement:
+
+    1. A `ConnectionManager` class that:
+       - Maintains a list of active WebSocket connections
+       - `connect(websocket)`: accepts and registers the connection
+       - `disconnect(websocket)`: removes the connection
+       - `broadcast(message: str)`: sends a message to all connected clients
+       - `send_personal(message: str, websocket)`: sends to one client
+
+    2. A WebSocket endpoint at `/ws/{client_id}` that:
+       - On connect: broadcasts `"Client {client_id} joined"`
+       - On message receive: broadcasts `"{client_id}: {message}"`
+       - On disconnect: broadcasts `"Client {client_id} left"`
+       - Handles `WebSocketDisconnect` gracefully
+
+    3. A simple HTTP GET `/` endpoint returning an HTML page with JavaScript WebSocket client code for testing
+
+    Include error handling so one client disconnecting does not crash the server.
+  ko: |
+    여러 동시 클라이언트를 지원하는 FastAPI와 asyncio를 사용하여 WebSocket 채팅 서버를 구축하세요:
+
+    1. 다음을 포함하는 `ConnectionManager` 클래스:
+       - 활성 WebSocket 연결 목록 유지
+       - `connect(websocket)`: 연결을 수락하고 등록
+       - `disconnect(websocket)`: 연결을 제거
+       - `broadcast(message: str)`: 모든 연결된 클라이언트에 메시지 전송
+       - `send_personal(message: str, websocket)`: 한 클라이언트에게 전송
+
+    2. `/ws/{client_id}`의 WebSocket 엔드포인트:
+       - 연결 시: `"Client {client_id} joined"` 브로드캐스트
+       - 메시지 수신 시: `"{client_id}: {message}"` 브로드캐스트
+       - 연결 해제 시: `"Client {client_id} left"` 브로드캐스트
+       - `WebSocketDisconnect`를 우아하게 처리
+
+    3. 테스트용 JavaScript WebSocket 클라이언트 코드가 있는 HTML 페이지를 반환하는 간단한 HTTP GET `/` 엔드포인트
+
+    한 클라이언트의 연결 해제가 서버를 크래시하지 않도록 오류 처리를 포함하세요.
+  ja: |
+    複数の同時クライアントをサポートするFastAPIとasyncioを使用してWebSocketチャットサーバーを構築してください:
+
+    1. 以下を含む`ConnectionManager`クラス:
+       - アクティブなWebSocket接続のリストを維持
+       - `connect(websocket)`: 接続を受け入れて登録
+       - `disconnect(websocket)`: 接続を削除
+       - `broadcast(message: str)`: すべての接続クライアントにメッセージを送信
+       - `send_personal(message: str, websocket)`: 1つのクライアントに送信
+
+    2. `/ws/{client_id}`のWebSocketエンドポイント:
+       - 接続時: `"Client {client_id} joined"`をブロードキャスト
+       - メッセージ受信時: `"{client_id}: {message}"`をブロードキャスト
+       - 切断時: `"Client {client_id} left"`をブロードキャスト
+       - `WebSocketDisconnect`を適切に処理
+
+    3. テスト用JavaScriptのWebSocketクライアントコードを含むHTMLページを返すシンプルなHTTP GET `/`エンドポイント
+
+    1つのクライアントの切断がサーバーをクラッシュさせないようにエラー処理を含めてください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines ConnectionManager class with connect, disconnect, broadcast, send_personal methods"
+    - "broadcast() is async and uses await websocket.send_text()"
+    - "WebSocket endpoint /ws/{client_id} handles connect, message loop, and disconnect"
+    - "WebSocketDisconnect exception is caught and handled gracefully"
+    - "On connect broadcasts join message, on message echoes with client_id, on disconnect broadcasts leave message"
+    - "GET / endpoint returns HTML with JavaScript WebSocket client"
+    - "disconnect() is called in finally block or exception handler"
+  scoring_notes: "Critical: disconnect must be called even on exception. Deduct heavily if WebSocketDisconnect is not caught or disconnect is not called in finally."

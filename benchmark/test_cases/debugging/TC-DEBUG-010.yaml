@@ -1,0 +1,183 @@
+id: TC-DEBUG-010
+category: debugging
+difficulty: hard
+tags: [recursion, stack-overflow, memoization, tail-call, debugging]
+
+prompts:
+  en: |
+    The following Python code has unbounded recursion that causes RecursionError (stack overflow). Analyze each function, explain why it overflows, and provide a fix:
+
+    ```python
+    def fibonacci(n):
+        """Return the nth Fibonacci number."""
+        if n <= 1:
+            return n
+        return fibonacci(n - 1) + fibonacci(n - 2)  # Exponential time, stack overflow for large n
+
+    def flatten(lst):
+        """Flatten an arbitrarily nested list."""
+        result = []
+        for item in lst:
+            if isinstance(item, list):
+                result.extend(flatten(item))  # Stack overflow for deeply nested input
+            else:
+                result.append(item)
+        return result
+
+    def count_nodes(tree):
+        """Count all nodes in a deeply nested dict tree."""
+        if not tree:
+            return 0
+        count = 1
+        for child in tree.get('children', []):
+            count += count_nodes(child)  # Stack overflow for deep trees
+        return count
+
+    def merge_sort(arr):
+        """Sort array using merge sort."""
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr) // 2
+        left = merge_sort(arr[:mid])
+        right = merge_sort(arr[mid:])
+        return merge(left, right)
+
+    def merge(left, right):
+        result = []
+        i = j = 0
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                result.append(left[i]); i += 1
+            else:
+                result.append(right[j]); j += 1
+        return result + left[i:] + right[j:]
+    ```
+
+    For each function: (1) explain the overflow scenario, (2) provide an iterative or memoized solution, (3) state the new depth/size limit if any.
+  ko: |
+    다음 Python 코드에는 RecursionError(스택 오버플로우)를 유발하는 무제한 재귀가 있습니다. 각 함수를 분석하고, 오버플로우 이유를 설명하고, 수정 방법을 제공하세요:
+
+    ```python
+    def fibonacci(n):
+        """n번째 피보나치 수를 반환합니다."""
+        if n <= 1:
+            return n
+        return fibonacci(n - 1) + fibonacci(n - 2)  # 지수 시간, 큰 n에서 스택 오버플로우
+
+    def flatten(lst):
+        """임의로 중첩된 리스트를 평탄화합니다."""
+        result = []
+        for item in lst:
+            if isinstance(item, list):
+                result.extend(flatten(item))  # 깊게 중첩된 입력에서 스택 오버플로우
+            else:
+                result.append(item)
+        return result
+
+    def count_nodes(tree):
+        """깊게 중첩된 dict 트리의 모든 노드를 계산합니다."""
+        if not tree:
+            return 0
+        count = 1
+        for child in tree.get('children', []):
+            count += count_nodes(child)  # 깊은 트리에서 스택 오버플로우
+        return count
+
+    def merge_sort(arr):
+        """병합 정렬을 사용하여 배열을 정렬합니다."""
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr) // 2
+        left = merge_sort(arr[:mid])
+        right = merge_sort(arr[mid:])
+        return merge(left, right)
+
+    def merge(left, right):
+        result = []
+        i = j = 0
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                result.append(left[i]); i += 1
+            else:
+                result.append(right[j]); j += 1
+        return result + left[i:] + right[j:]
+    ```
+
+    각 함수에 대해: (1) 오버플로우 시나리오 설명, (2) 반복적 또는 메모이제이션 솔루션 제공, (3) 새로운 깊이/크기 제한이 있으면 명시.
+  ja: |
+    次のPythonコードには、RecursionError（スタックオーバーフロー）を引き起こす無制限の再帰があります。各関数を分析し、オーバーフローする理由を説明し、修正を提供してください:
+
+    ```python
+    def fibonacci(n):
+        """n番目のフィボナッチ数を返します。"""
+        if n <= 1:
+            return n
+        return fibonacci(n - 1) + fibonacci(n - 2)  # 指数時間、大きなnでスタックオーバーフロー
+
+    def flatten(lst):
+        """任意にネストされたリストをフラット化します。"""
+        result = []
+        for item in lst:
+            if isinstance(item, list):
+                result.extend(flatten(item))  # 深くネストされた入力でスタックオーバーフロー
+            else:
+                result.append(item)
+        return result
+
+    def count_nodes(tree):
+        """深くネストされたdictツリーのすべてのノードをカウントします。"""
+        if not tree:
+            return 0
+        count = 1
+        for child in tree.get('children', []):
+            count += count_nodes(child)  # 深いツリーでスタックオーバーフロー
+        return count
+
+    def merge_sort(arr):
+        """マージソートを使用して配列をソートします。"""
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr) // 2
+        left = merge_sort(arr[:mid])
+        right = merge_sort(arr[mid:])
+        return merge(left, right)
+
+    def merge(left, right):
+        result = []
+        i = j = 0
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                result.append(left[i]); i += 1
+            else:
+                result.append(right[j]); j += 1
+        return result + left[i:] + right[j:]
+    ```
+
+    各関数について: (1)オーバーフローシナリオを説明、(2)反復的またはメモ化ソリューションを提供、(3)新しい深さ/サイズ制限があれば明記。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: "fibonacci(100)"
+        expected: "354224848179261915075"
+      - input: "fibonacci(0)"
+        expected: "0"
+      - input: "flatten([1, [2, [3, [4, [5]]]]])"
+        expected: "[1, 2, 3, 4, 5]"
+      - input: "flatten([1, 2, 3])"
+        expected: "[1, 2, 3]"
+      - input: |
+          deep = {'val': 1, 'children': [{'val': 2, 'children': [{'val': 3, 'children': []}]}]}
+          count_nodes(deep)
+        expected: "3"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Fixes fibonacci using memoization (@functools.lru_cache or manual dict) or iterative approach"
+      - "Fixes flatten using an explicit stack (collections.deque) to avoid recursion"
+      - "Fixes count_nodes using an iterative BFS/DFS with a stack or queue"
+      - "Explains that Python default recursion limit is ~1000 (sys.getrecursionlimit())"
+      - "Fixed fibonacci(100) returns the correct large integer without RecursionError"
+      - "Notes that merge_sort has O(log n) depth and is safe for typical inputs but flagged for very large arrays"

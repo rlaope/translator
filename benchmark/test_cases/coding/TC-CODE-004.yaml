@@ -1,0 +1,49 @@
+id: TC-CODE-004
+category: coding
+difficulty: medium
+tags: [dynamic-programming, subsequence, arrays, optimization]
+
+prompts:
+  en: |
+    Write a Python function `longest_increasing_subsequence(nums)` that returns the length of the longest strictly increasing subsequence of the given integer array.
+
+    Requirements:
+    - Must run in O(n log n) time using patience sorting or binary search
+    - Return 0 for an empty array
+    - Elements in the subsequence must be strictly increasing (not equal)
+
+    Also write `lis_sequence(nums)` that returns one actual subsequence (not just the length). If multiple subsequences of maximum length exist, return any one of them.
+  ko: |
+    주어진 정수 배열에서 가장 긴 순증가 부분 수열의 길이를 반환하는 Python 함수 `longest_increasing_subsequence(nums)`를 작성하세요.
+
+    요구사항:
+    - 인내 정렬 또는 이진 탐색을 사용하여 O(n log n) 시간에 실행되어야 함
+    - 빈 배열의 경우 0을 반환
+    - 부분 수열의 원소는 엄격하게 증가해야 함 (같은 값 불허)
+
+    실제 부분 수열(길이뿐만 아니라)을 반환하는 `lis_sequence(nums)`도 작성하세요. 최대 길이의 부분 수열이 여러 개 있는 경우 그 중 하나를 반환하세요.
+  ja: |
+    与えられた整数配列の最長増加部分列の長さを返すPython関数`longest_increasing_subsequence(nums)`を実装してください。
+
+    要件:
+    - 忍耐ソートまたは二分探索を使用してO(n log n)時間で実行する必要がある
+    - 空の配列に対しては0を返す
+    - 部分列の要素は厳密に増加している必要がある（等しい値は不可）
+
+    長さだけでなく実際の部分列を返す`lis_sequence(nums)`も実装してください。最大長の部分列が複数存在する場合は、そのうちの1つを返してください。
+
+validation:
+  type: code_execution
+  language: python
+  test_cases:
+    - input: "longest_increasing_subsequence([10, 9, 2, 5, 3, 7, 101, 18])"
+      expected: "4"
+    - input: "longest_increasing_subsequence([0, 1, 0, 3, 2, 3])"
+      expected: "4"
+    - input: "longest_increasing_subsequence([7, 7, 7, 7, 7])"
+      expected: "1"
+    - input: "longest_increasing_subsequence([])"
+      expected: "0"
+    - input: "len(lis_sequence([10, 9, 2, 5, 3, 7, 101, 18]))"
+      expected: "4"
+  timeout_seconds: 30

@@ -1,0 +1,54 @@
+id: TC-API-003
+category: api_usage
+difficulty: easy
+tags: [sqlalchemy, orm, crud, database, python]
+
+prompts:
+  en: |
+    Using SQLAlchemy 2.x (with the new `Session` style), implement basic CRUD operations for a `Product` model.
+
+    Define the `Product` model with fields: `id` (Integer, primary key, autoincrement), `name` (String(100), not nullable), `price` (Float, not nullable), `stock` (Integer, default 0), `created_at` (DateTime, server default now).
+
+    Write these four functions using a SQLite in-memory database:
+    - `create_product(session, name, price, stock=0) -> Product`
+    - `get_product(session, product_id) -> Product | None`
+    - `update_product(session, product_id, **kwargs) -> Product | None`
+    - `delete_product(session, product_id) -> bool`
+
+    Include database setup code (`engine`, `Base.metadata.create_all`) and a demo `if __name__ == "__main__"` block showing all four operations.
+  ko: |
+    SQLAlchemy 2.x (새로운 `Session` 스타일 사용)을 사용하여 `Product` 모델에 대한 기본 CRUD 작업을 구현하세요.
+
+    `Product` 모델을 다음 필드로 정의하세요: `id` (Integer, 기본 키, 자동 증가), `name` (String(100), not nullable), `price` (Float, not nullable), `stock` (Integer, 기본값 0), `created_at` (DateTime, 서버 기본값 현재 시각).
+
+    SQLite 인메모리 데이터베이스를 사용하여 다음 네 가지 함수를 작성하세요:
+    - `create_product(session, name, price, stock=0) -> Product`
+    - `get_product(session, product_id) -> Product | None`
+    - `update_product(session, product_id, **kwargs) -> Product | None`
+    - `delete_product(session, product_id) -> bool`
+
+    데이터베이스 설정 코드(`engine`, `Base.metadata.create_all`)와 네 가지 작업 모두를 보여주는 `if __name__ == "__main__"` 데모 블록을 포함하세요.
+  ja: |
+    SQLAlchemy 2.x（新しい`Session`スタイルを使用）を使用して、`Product`モデルの基本的なCRUD操作を実装してください。
+
+    `Product`モデルを以下のフィールドで定義してください: `id`（Integer、主キー、自動増分）、`name`（String(100)、not nullable）、`price`（Float、not nullable）、`stock`（Integer、デフォルト0）、`created_at`（DateTime、サーバーデフォルト現在時刻）。
+
+    SQLiteインメモリデータベースを使用して以下の4つの関数を実装してください:
+    - `create_product(session, name, price, stock=0) -> Product`
+    - `get_product(session, product_id) -> Product | None`
+    - `update_product(session, product_id, **kwargs) -> Product | None`
+    - `delete_product(session, product_id) -> bool`
+
+    データベースのセットアップコード（`engine`、`Base.metadata.create_all`）と4つの操作すべてを示す`if __name__ == "__main__"`デモブロックを含めてください。
+
+validation:
+  type: llm_judge
+  criteria:
+    - "Defines Product model using SQLAlchemy DeclarativeBase with all required fields"
+    - "Uses SQLAlchemy 2.x style (Session, select() statements, not legacy Query API)"
+    - "create_product adds and commits the product, returns the Product instance"
+    - "get_product uses session.get() or select() and returns None if not found"
+    - "update_product modifies only provided kwargs fields and commits"
+    - "delete_product removes the product and returns True, returns False if not found"
+    - "Uses sqlite:///memory or sqlite+pysqlite:///:memory: for in-memory database"
+  scoring_notes: "Deduct significantly if using legacy Query API (session.query()) instead of 2.x style. Partial credit for missing fields or wrong return types."

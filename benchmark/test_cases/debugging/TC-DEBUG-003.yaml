@@ -1,0 +1,115 @@
+id: TC-DEBUG-003
+category: debugging
+difficulty: easy
+tags: [encoding, unicode, bytes, strings, debugging]
+
+prompts:
+  en: |
+    The following Python code has incorrect string encoding handling. Find and fix all bugs:
+
+    ```python
+    def read_file_content(filepath):
+        """Read a text file and return its content as a string."""
+        with open(filepath, 'r') as f:
+            return f.read()
+
+    def encode_for_api(text):
+        """Encode text to bytes for sending over HTTP."""
+        return text.encode()  # Bug: assumes ASCII
+
+    def decode_response(response_bytes):
+        """Decode API response bytes to string."""
+        return response_bytes.decode('ascii')  # Bug: assumes ASCII
+
+    def save_multilingual_csv(rows, filepath):
+        """Save a list of string rows to a CSV file (rows may contain CJK characters)."""
+        with open(filepath, 'w') as f:
+            for row in rows:
+                f.write(','.join(row) + '\n')
+
+    def compare_strings_ignore_case(s1, s2):
+        """Case-insensitive comparison supporting Unicode (e.g., German ß)."""
+        return s1.lower() == s2.lower()  # Bug: .lower() not full Unicode case-fold
+    ```
+
+    For each function: identify the encoding bug, explain what inputs would fail, and provide the corrected version with proper encoding handling.
+  ko: |
+    다음 Python 코드에는 잘못된 문자열 인코딩 처리가 있습니다. 모든 버그를 찾아 수정하세요:
+
+    ```python
+    def read_file_content(filepath):
+        """텍스트 파일을 읽어 문자열로 반환합니다."""
+        with open(filepath, 'r') as f:
+            return f.read()
+
+    def encode_for_api(text):
+        """HTTP 전송을 위해 텍스트를 바이트로 인코딩합니다."""
+        return text.encode()  # 버그: ASCII 가정
+
+    def decode_response(response_bytes):
+        """API 응답 바이트를 문자열로 디코딩합니다."""
+        return response_bytes.decode('ascii')  # 버그: ASCII 가정
+
+    def save_multilingual_csv(rows, filepath):
+        """문자열 행 목록을 CSV 파일로 저장합니다 (행에 CJK 문자 포함 가능)."""
+        with open(filepath, 'w') as f:
+            for row in rows:
+                f.write(','.join(row) + '\n')
+
+    def compare_strings_ignore_case(s1, s2):
+        """유니코드 지원 대소문자 무시 비교 (예: 독일어 ß)."""
+        return s1.lower() == s2.lower()  # 버그: .lower()는 완전한 유니코드 케이스 폴딩 아님
+    ```
+
+    각 함수에 대해: 인코딩 버그 식별, 실패할 입력 설명, 적절한 인코딩 처리를 포함한 수정 버전 제공.
+  ja: |
+    次のPythonコードには、文字列エンコーディングの処理が誤っています。すべてのバグを見つけて修正してください:
+
+    ```python
+    def read_file_content(filepath):
+        """テキストファイルを読み込み、文字列として返します。"""
+        with open(filepath, 'r') as f:
+            return f.read()
+
+    def encode_for_api(text):
+        """HTTP送信用にテキストをバイトにエンコードします。"""
+        return text.encode()  # バグ: ASCIIを仮定
+
+    def decode_response(response_bytes):
+        """APIレスポンスのバイトを文字列にデコードします。"""
+        return response_bytes.decode('ascii')  # バグ: ASCIIを仮定
+
+    def save_multilingual_csv(rows, filepath):
+        """文字列行のリストをCSVファイルに保存します（行にCJK文字が含まれる場合あり）。"""
+        with open(filepath, 'w') as f:
+            for row in rows:
+                f.write(','.join(row) + '\n')
+
+    def compare_strings_ignore_case(s1, s2):
+        """Unicode対応の大文字小文字を無視した比較（例: ドイツ語のß）。"""
+        return s1.lower() == s2.lower()  # バグ: .lower()は完全なUnicodeケースフォールドではない
+    ```
+
+    各関数について: エンコーディングバグを特定し、失敗する入力を説明し、適切なエンコーディング処理を含む修正バージョンを提供してください。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: "encode_for_api('Hello 안녕 世界')"
+        expected: "b'Hello \\xec\\x95\\x88\\xeb\\x85\\x95 \\xe4\\xb8\\x96\\xe7\\x95\\x8c'"
+      - input: "decode_response('こんにちは'.encode('utf-8'))"
+        expected: "'こんにちは'"
+      - input: "compare_strings_ignore_case('straße', 'STRASSE')"
+        expected: "True"
+      - input: "compare_strings_ignore_case('Hello', 'HELLO')"
+        expected: "True"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Identifies that open() without encoding= uses platform default, should use encoding='utf-8'"
+      - "Identifies that .encode() without argument defaults to UTF-8 (actually correct) but explains the intent"
+      - "Fixes decode_response to use 'utf-8' instead of 'ascii'"
+      - "Fixes save_multilingual_csv to use open(..., encoding='utf-8')"
+      - "Fixes compare_strings_ignore_case to use casefold() instead of lower()"

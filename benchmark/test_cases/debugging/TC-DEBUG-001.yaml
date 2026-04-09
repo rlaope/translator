@@ -1,0 +1,110 @@
+id: TC-DEBUG-001
+category: debugging
+difficulty: easy
+tags: [off-by-one, loops, arrays, debugging]
+
+prompts:
+  en: |
+    The following Python function is supposed to return the sum of all elements in a list, but it has an off-by-one error. Find and fix the bug, then explain what caused it.
+
+    ```python
+    def sum_list(nums):
+        total = 0
+        for i in range(len(nums) - 1):  # Bug is here
+            total += nums[i]
+        return total
+    ```
+
+    Also fix this second version that has a different off-by-one error:
+
+    ```python
+    def find_max_subarray_sum(nums, k):
+        """Return the maximum sum of any subarray of length k."""
+        if len(nums) < k:
+            return None
+        window = sum(nums[:k])
+        max_sum = window
+        for i in range(1, len(nums) - k):  # Bug is here
+            window = window - nums[i-1] + nums[i+k-1]
+            max_sum = max(max_sum, window)
+        return max_sum
+    ```
+
+    For each bug: (1) identify the exact line, (2) explain why it's wrong, (3) provide the corrected code.
+  ko: |
+    다음 Python 함수는 리스트의 모든 원소의 합을 반환해야 하지만 인덱스 오류(off-by-one error)가 있습니다. 버그를 찾아 수정하고 원인을 설명하세요.
+
+    ```python
+    def sum_list(nums):
+        total = 0
+        for i in range(len(nums) - 1):  # 버그가 여기 있음
+            total += nums[i]
+        return total
+    ```
+
+    다른 인덱스 오류가 있는 두 번째 버전도 수정하세요:
+
+    ```python
+    def find_max_subarray_sum(nums, k):
+        """길이 k인 부분 배열의 최대 합을 반환합니다."""
+        if len(nums) < k:
+            return None
+        window = sum(nums[:k])
+        max_sum = window
+        for i in range(1, len(nums) - k):  # 버그가 여기 있음
+            window = window - nums[i-1] + nums[i+k-1]
+            max_sum = max(max_sum, window)
+        return max_sum
+    ```
+
+    각 버그에 대해: (1) 정확한 라인 식별, (2) 왜 잘못되었는지 설명, (3) 수정된 코드 제공.
+  ja: |
+    次のPython関数はリストのすべての要素の合計を返すはずですが、オフバイワンエラーがあります。バグを見つけて修正し、原因を説明してください。
+
+    ```python
+    def sum_list(nums):
+        total = 0
+        for i in range(len(nums) - 1):  # バグはここ
+            total += nums[i]
+        return total
+    ```
+
+    異なるオフバイワンエラーがある2番目のバージョンも修正してください:
+
+    ```python
+    def find_max_subarray_sum(nums, k):
+        """長さkの部分配列の最大和を返します。"""
+        if len(nums) < k:
+            return None
+        window = sum(nums[:k])
+        max_sum = window
+        for i in range(1, len(nums) - k):  # バグはここ
+            window = window - nums[i-1] + nums[i+k-1]
+            max_sum = max(max_sum, window)
+        return max_sum
+    ```
+
+    各バグについて: (1)正確な行を特定、(2)なぜ間違っているかを説明、(3)修正されたコードを提供。
+
+validation:
+  type: hybrid
+  code_execution:
+    language: python
+    test_cases:
+      - input: "sum_list([1, 2, 3, 4, 5])"
+        expected: "15"
+      - input: "sum_list([10])"
+        expected: "10"
+      - input: "sum_list([])"
+        expected: "0"
+      - input: "find_max_subarray_sum([1, 3, -1, -3, 5, 3, 6, 7], 3)"
+        expected: "16"
+      - input: "find_max_subarray_sum([2, 1, 5, 1, 3, 2], 3)"
+        expected: "9"
+    timeout_seconds: 30
+  llm_judge:
+    criteria:
+      - "Correctly identifies range(len(nums) - 1) should be range(len(nums))"
+      - "Explains that the last element is skipped due to the -1"
+      - "Correctly identifies range(1, len(nums) - k) should be range(1, len(nums) - k + 1)"
+      - "Explains that the last valid window starting position is missed"
