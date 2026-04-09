@@ -171,42 +171,48 @@ Handles edge cases correctly:
 - Pure code blocks → correctly identifies as English (no translation)
 - Empty input → passes through without error
 
-### Benchmark Results (5 test cases × 3 modes, LLM-as-Judge scoring)
+### Benchmark Results (5 coding tests × 3 trials × 3 modes, with code execution)
 
-Tested with `claude -p` across coding, API, debugging, and architecture tasks:
+Tested with `claude -p`. Each response was **actually executed** with assertion tests — not just LLM-judged.
 
-**Composite Scores:**
+**Composite Scores (LLM-judge + code execution combined):**
 
-| Mode | Composite | Impl. Accuracy | Intent | Hallucination | Bugs | Omission |
-|------|-----------|----------------|--------|---------------|------|----------|
-| **EN-native** | **3.86** | 3.40 | 4.00 | 5.00 | 3.20 | 3.60 |
-| **KO-native** | **4.46** | 4.20 | 4.60 | 5.00 | 4.20 | 4.20 |
-| **KO-translated** | **4.03** | 3.60 | 4.20 | 5.00 | 3.60 | 3.60 |
+| Mode | Composite | Code Exec Pass Rate |
+|------|-----------|---------------------|
+| **EN-native** | **4.57** | **80%** (12/15) |
+| **KO-native** | **4.53** | **87%** (13/15) |
+| **KO-translated** | **1.91** | **20%** (3/15) |
 
 **Per-Test Breakdown:**
 
-| Test | EN-native | KO-native | KO-translated |
-|------|-----------|-----------|---------------|
-| coding-1 (LRU Cache) | 5.00 | 4.65 | 5.00 |
-| coding-2 (Rate Limiter) | 4.40 | 5.00 | 2.05 |
-| api-1 (FastAPI + JWT) | 1.80 | 4.45 | 5.00 |
-| debug-1 (Race Condition) | 5.00 | 5.00 | 5.00 |
-| arch-1 (Circuit Breaker) | 3.10 | 3.20 | 3.10 |
+| Test | EN | KO | KO-translated | EN exec | KO exec | KO-tr exec |
+|------|-----|-----|---------------|---------|---------|------------|
+| LRU Cache | 2.95 | **5.00** | 4.12 | 0/3 | **3/3** | **3/3** |
+| Merge Intervals | **5.00** | 4.85 | 1.53 | **3/3** | **3/3** | 0/3 |
+| Valid Parentheses | **5.00** | 4.92 | 1.27 | **3/3** | **3/3** | 0/3 |
+| Two Sum | **5.00** | **5.00** | 1.00 | **3/3** | **3/3** | 0/3 |
+| BST | **4.92** | 2.86 | 1.62 | **3/3** | 1/3 | 0/3 |
 
 ![Composite Scores](benchmark/results/charts/composite_scores.png)
 
-![Per-Test Scores](benchmark/results/charts/per_test_scores.png)
+![Code Execution Pass Rate](benchmark/results/charts/exec_pass_rate.png)
 
-![Radar Chart](benchmark/results/charts/radar_chart.png)
+![Per-Test Scores](benchmark/results/charts/per_test_scores.png)
 
 ![Heatmap](benchmark/results/charts/heatmap.png)
 
 **Key Findings:**
-- Hallucination scores are perfect (5.0) across all modes — Claude does not fabricate APIs regardless of prompt language
-- KO-native outperformed EN-native in this small sample (4.46 vs 3.86), suggesting Claude's multilingual capabilities are stronger than commonly assumed
-- KO-translated shows improvement over EN-native in specific cases (api-1: 5.00 vs 1.80)
-- Results vary significantly by task type — the plugin's value depends on the complexity and domain of the prompt
-- **Note**: 5 test cases is a small sample; run the full 40-case benchmark for statistically significant conclusions
+
+1. **EN and KO are nearly equal** — EN 4.57 vs KO 4.53, with 80% vs 87% code execution pass rates. The "English is always better" hypothesis is **not supported**.
+
+2. **KO-translated performs terribly** (1.91, 20% exec pass) — The translation step **destroys precise constraints**. When translating "함수만 정의" (only define the function), the translator sometimes outputs a full program with `print()` statements, breaking the test harness.
+
+3. **Translation loses function signatures** — Prompts like `lru_cache(capacity)` that must return `get, put` functions get translated into vague descriptions, causing incorrect implementations.
+
+4. **The plugin needs smarter translation** — Naive full-prompt translation hurts more than it helps for code generation. The plugin should:
+   - Preserve code-specific constraints verbatim
+   - Only translate natural language descriptions
+   - Keep function signatures, parameter names, and return types as-is
 
 ---
 
