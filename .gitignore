@@ -3,8 +3,8 @@ dist/
 .env
 *.pyc
 __pycache__/
-benchmark/results/*
-!benchmark/results/.gitkeep
+benchmark/results/raw_results.json
+benchmark/results/2*
 .venv/
 *.egg-info/
 .DS_Store

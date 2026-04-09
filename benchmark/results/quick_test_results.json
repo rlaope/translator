@@ -1,0 +1,26 @@
+{
+  "en": {
+    "implementation_accuracy": 3.4,
+    "intent_comprehension": 4.0,
+    "hallucination": 5.0,
+    "code_bugs": 3.2,
+    "omission_outdated": 3.6,
+    "composite": 3.86
+  },
+  "ko": {
+    "implementation_accuracy": 4.2,
+    "intent_comprehension": 4.6,
+    "hallucination": 5.0,
+    "code_bugs": 4.2,
+    "omission_outdated": 4.2,
+    "composite": 4.46
+  },
+  "ko_translated": {
+    "implementation_accuracy": 3.6,
+    "intent_comprehension": 4.2,
+    "hallucination": 5.0,
+    "code_bugs": 3.6,
+    "omission_outdated": 3.6,
+    "composite": 4.03
+  }
+}

@@ -171,6 +171,43 @@ Handles edge cases correctly:
 - Pure code blocks → correctly identifies as English (no translation)
 - Empty input → passes through without error
 
+### Benchmark Results (5 test cases × 3 modes, LLM-as-Judge scoring)
+
+Tested with `claude -p` across coding, API, debugging, and architecture tasks:
+
+**Composite Scores:**
+
+| Mode | Composite | Impl. Accuracy | Intent | Hallucination | Bugs | Omission |
+|------|-----------|----------------|--------|---------------|------|----------|
+| **EN-native** | **3.86** | 3.40 | 4.00 | 5.00 | 3.20 | 3.60 |
+| **KO-native** | **4.46** | 4.20 | 4.60 | 5.00 | 4.20 | 4.20 |
+| **KO-translated** | **4.03** | 3.60 | 4.20 | 5.00 | 3.60 | 3.60 |
+
+**Per-Test Breakdown:**
+
+| Test | EN-native | KO-native | KO-translated |
+|------|-----------|-----------|---------------|
+| coding-1 (LRU Cache) | 5.00 | 4.65 | 5.00 |
+| coding-2 (Rate Limiter) | 4.40 | 5.00 | 2.05 |
+| api-1 (FastAPI + JWT) | 1.80 | 4.45 | 5.00 |
+| debug-1 (Race Condition) | 5.00 | 5.00 | 5.00 |
+| arch-1 (Circuit Breaker) | 3.10 | 3.20 | 3.10 |
+
+![Composite Scores](benchmark/results/charts/composite_scores.png)
+
+![Per-Test Scores](benchmark/results/charts/per_test_scores.png)
+
+![Radar Chart](benchmark/results/charts/radar_chart.png)
+
+![Heatmap](benchmark/results/charts/heatmap.png)
+
+**Key Findings:**
+- Hallucination scores are perfect (5.0) across all modes — Claude does not fabricate APIs regardless of prompt language
+- KO-native outperformed EN-native in this small sample (4.46 vs 3.86), suggesting Claude's multilingual capabilities are stronger than commonly assumed
+- KO-translated shows improvement over EN-native in specific cases (api-1: 5.00 vs 1.80)
+- Results vary significantly by task type — the plugin's value depends on the complexity and domain of the prompt
+- **Note**: 5 test cases is a small sample; run the full 40-case benchmark for statistically significant conclusions
+
 ---
 
 ## The Problem
