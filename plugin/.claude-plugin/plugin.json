@@ -1,0 +1,8 @@
+{
+  "name": "prompt-translator",
+  "version": "1.0.0",
+  "description": "Translates non-English prompts to English before Claude processes them for improved accuracy",
+  "author": { "name": "khope" },
+  "license": "MIT",
+  "keywords": ["translation", "multilingual", "korean", "japanese", "accuracy"]
+}

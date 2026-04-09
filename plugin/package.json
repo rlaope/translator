@@ -1,0 +1,13 @@
+{
+  "name": "claude-prompt-translator",
+  "version": "1.0.0",
+  "description": "Claude Code plugin that translates non-English prompts to English for improved accuracy",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/translate-hook.test.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.35.0"
+  },
+  "license": "MIT"
+}
