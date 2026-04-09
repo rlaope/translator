@@ -1,0 +1,24 @@
+[project]
+name = "multilingual-benchmark"
+version = "0.1.0"
+description = "Benchmark suite for multilingual LLM accuracy testing"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40.0",
+    "pyyaml>=6.0",
+    "scipy>=1.14.0",
+    "matplotlib>=3.9.0",
+    "seaborn>=0.13.0",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "rich>=13.0.0",
+    "click>=8.1.0",
+    "jinja2>=3.1.0",
+]
+
+[project.scripts]
+benchmark = "cli:main"
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
