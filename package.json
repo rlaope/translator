@@ -1,0 +1,11 @@
+{
+  "name": "multilingual-llm-benchmark",
+  "version": "1.0.0",
+  "description": "Multilingual LLM accuracy benchmark & prompt translator plugin for Claude Code",
+  "private": true,
+  "workspaces": ["plugin"],
+  "scripts": {
+    "test:plugin": "cd plugin && node tests/translate-hook.test.mjs"
+  },
+  "license": "MIT"
+}
